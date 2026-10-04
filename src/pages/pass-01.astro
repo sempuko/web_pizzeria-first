@@ -1,0 +1,54 @@
+---
+import Base from '../layouts/Base.astro';
+import EditorialHeritage from '../components/heroes/EditorialHeritage.astro';
+import CinematicTrattoria from '../components/heroes/CinematicTrattoria.astro';
+import GraphicItaliano from '../components/heroes/GraphicItaliano.astro';
+
+// Presentation chrome only — neutral, so it never competes with the studies.
+const studies = [
+  {
+    id: 'etude-01',
+    name: 'Editorial Heritage',
+    thesis: 'La carte ouverte : le menu imprimé devient la page d’accueil.',
+  },
+  {
+    id: 'etude-02',
+    name: 'Cinematic Trattoria',
+    thesis: 'La saracinesca : 19h, le rideau se lève et la salle s’allume.',
+  },
+  {
+    id: 'etude-03',
+    name: 'Italian Graphic',
+    thesis: 'Giallo Stella : une carte de pizzeria imprimée en deux couleurs.',
+  },
+];
+---
+
+<Base title="La Stella d’Oro — Pass 01">
+  <main>
+    {
+      studies.map((s, i) => (
+        <>
+          <div class="flex items-baseline gap-6 bg-[#1b1714] px-[3.4vw] py-5 font-grotesk text-[13px] text-[#a99b8a]">
+            <span class="tabular-nums text-[#e9e0d2]">Direction {i + 1} sur 3</span>
+            <span class="text-[#e9e0d2]">{s.name}</span>
+            <span>{s.thesis}</span>
+            <nav class="ml-auto flex gap-4" aria-label="Directions">
+              {studies.map((t, j) => (
+                <a
+                  href={`#${t.id}`}
+                  class:list={['tabular-nums hover:text-[#e9e0d2]', { 'text-[#e9e0d2] underline underline-offset-4': j === i }]}
+                >
+                  {j + 1}
+                </a>
+              ))}
+            </nav>
+          </div>
+          {i === 0 && <EditorialHeritage />}
+          {i === 1 && <CinematicTrattoria />}
+          {i === 2 && <GraphicItaliano />}
+        </>
+      ))
+    }
+  </main>
+</Base>

@@ -1,0 +1,70 @@
+---
+// 06 — Sophie. The intimate moment: her name, very large, laid over hands at work.
+// No stock face is presented as her; the portrait is the first shot to take for real.
+// The photo is mirrored so the name lands on the light side of the frame.
+import Lines from '../Lines.astro';
+import { photo } from '../../lib/photo';
+
+const mains = photo('mains-pizza');
+
+const gestures = [
+  { label: 'Le pâton', src: '/img/calzone-mains-m.jpg', position: '50% 88%' },
+  { label: 'La garniture', src: '/img/margherita-gros-m.jpg', position: '40% 40%' },
+  { label: 'Le four', src: '/img/four-m.jpg', position: '30% 8%' },
+];
+---
+
+<section
+  id="sophie"
+  class="relative bg-papier text-nuit pt-[clamp(100px,14vh,150px)] pb-[clamp(80px,12vh,130px)] lg:p-0 lg:h-[100vh] lg:min-h-[860px] font-archivo"
+  data-nav-section="maison"
+>
+  <p class="mx-5 lg:mx-0 lg:absolute lg:left-[8vw] lg:top-[19vh] text-[13px] text-nuit/70">À l’accueil, depuis des années</p>
+
+  <Lines
+    as="h2"
+    class="relative z-30 mx-5 mt-2 lg:m-0 lg:absolute lg:left-[6vw] lg:top-[22vh] font-news italic text-[29vw] md:text-[22vw] lg:text-[19vw] leading-[0.9] tracking-[-0.03em] mix-blend-multiply"
+    style="font-variation-settings: 'opsz' 72; font-weight: 300"
+    lines={['Sophie']}
+  />
+
+  <!-- Photograph: sits inside the section; only the tomatoes cross an edge -->
+  <figure
+    class="relative z-20 -mt-[11vw] ml-auto mr-5 w-[76vw] md:w-[56vw] m-0 lg:absolute lg:left-[44vw] lg:top-[14vh] lg:mt-0 lg:mr-0 lg:w-[34vw]"
+  >
+    <div class="aspect-[4/5] lg:aspect-[2/3] overflow-hidden -scale-x-100" data-reveal="curtain" data-flow>
+      <img
+        src={mains.src}
+        srcset={mains.srcset}
+        sizes="(min-width: 1024px) 34vw, 76vw"
+        alt="Mains qui terminent une pizza avant le service"
+        class="grade h-full w-full object-cover"
+        style="object-position: 50% 55%"
+        loading="lazy"
+      />
+    </div>
+  </figure>
+
+  <div class="mx-5 mt-12 md:ml-[8vw] lg:m-0 lg:absolute lg:left-[8vw] lg:top-[53vh] max-w-[30ch]">
+    <p class="font-news text-[20px] lg:text-[21px] leading-[1.5]" style="font-variation-settings: 'opsz' 20">
+      Un sourire à la porte, un mot pour chacun, et cette impression, dès la première fois, d’être attendu. C’est elle
+      que les clients citent en premier quand ils parlent de la maison.
+    </p>
+
+    <ol class="mt-8 lg:mt-[4.5vh] flex gap-3 lg:gap-4" aria-label="Les gestes, dans l’ordre">
+      {
+        gestures.map((g, i) => (
+          <li class="w-[25vw] md:w-[15vw] lg:w-[7.4vw]">
+            <div class="aspect-square overflow-hidden" data-reveal="curtain" style={`--delay:${i * 120}ms`}>
+              <img src={g.src} alt="" class="grade h-full w-full object-cover" style={`object-position:${g.position}`} loading="lazy" />
+            </div>
+            <p class="mt-2 text-[13px] text-nuit/70">
+              <span class="tabular-nums mr-1">{i + 1}</span>
+              {g.label}
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>

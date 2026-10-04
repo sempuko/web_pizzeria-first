@@ -1,0 +1,303 @@
+---
+// 03 — Italian Graphic · « Giallo Stella »
+// A two-colour printed pizza list. The pizza is a disc that breaks the grid;
+// choosing a number turns it, like the pizzaiolo turning a pie with the peel.
+
+const pizzas = [
+  {
+    n: 1,
+    name: 'Margherita',
+    ingredients: 'tomate, fior di latte, basilic',
+    price: '10,50',
+    src: '/img/margherita-pierre.jpg',
+    // image width relative to the disc, pizza centre (fractions), height / width
+    crop: { s: 1.86, cx: 0.388, cy: 0.519, ar: 0.6665 },
+  },
+  {
+    n: 6,
+    name: 'Estiva',
+    ingredients: 'crème, mozzarella, tomates fraîches, origan',
+    price: '12,50',
+    src: '/img/quattro.jpg',
+    crop: { s: 1.4, cx: 0.537, cy: 0.635, ar: 1.3556 },
+  },
+  {
+    n: 11,
+    name: 'Burrata',
+    ingredients: 'tomate, burrata, roquette, huile d’olive',
+    price: '14,90',
+    src: '/img/burrata.jpg',
+    crop: { s: 1.1, cx: 0.53, cy: 0.545, ar: 1.333 },
+  },
+];
+---
+
+<section
+  id="etude-03"
+  class="gi grain relative h-svh min-h-[720px] overflow-hidden bg-giallo text-espresso font-grotesk"
+  style="--grain-opacity: .35"
+  data-gi
+>
+  <!-- Side tab, as on a printed menu -->
+  <aside class="absolute inset-y-0 left-0 z-30 w-[56px] border-r-2 border-espresso flex flex-col items-center py-6">
+    <svg class="w-[22px] h-[22px] fill-espresso" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 1.5l2.9 7.3 7.6.5-5.9 4.9 1.9 7.6L12 17.6l-6.5 4.2 1.9-7.6L1.5 9.3l7.6-.5z" />
+    </svg>
+    <p class="mt-auto [writing-mode:vertical-rl] rotate-180 text-[12px] tracking-[0.02em] font-medium whitespace-nowrap">
+      3 rue Jacques Stella, 69002 Lyon
+    </p>
+  </aside>
+
+  <div class="absolute inset-y-0 left-[56px] right-0">
+    <!-- Running head -->
+    <header class="relative z-30 h-[60px] flex items-stretch border-b-[3px] border-espresso text-[14px]">
+      <p class="flex items-center px-6 border-r border-espresso font-semibold">Pizzeria &amp; cucina italiana</p>
+      <p class="flex items-center px-6 border-r border-espresso">Pizzas, pâtes et dolci, à deux pas de la République</p>
+      <nav class="ml-auto flex items-stretch" aria-label="Navigation principale">
+        <a class="gi-nav flex items-center px-6 border-l border-espresso" href="#">La carte</a>
+        <a class="gi-nav flex items-center px-6 border-l border-espresso" href="#">La maison</a>
+        <a class="gi-nav flex items-center px-6 border-l border-espresso" href="#">Nous trouver</a>
+        <a class="gi-book flex items-center px-7 bg-espresso text-giallo font-semibold" href="#">Réserver une table</a>
+      </nav>
+    </header>
+
+    <!-- The disc: breaks the grid, runs off the right edge -->
+    <div class="gi-disc absolute z-10 right-[-7vw] top-[13vh] w-[min(47vw,82vh)] aspect-square" aria-hidden="true">
+      <div class="absolute -inset-[18px] rounded-full border-[1.5px] border-espresso"></div>
+      <div class="gi-turn absolute inset-0 rounded-full overflow-hidden bg-espresso">
+        {
+          pizzas.map((p, i) => (
+            <img
+              src={p.src}
+              alt=""
+              data-n={p.n}
+              class:list={['gi-pie absolute max-w-none', { 'is-active': i === 0 }]}
+              style={`--s:${p.crop.s};--cx:${p.crop.cx};--cy:${p.crop.cy};--ar:${p.crop.ar}`}
+              decoding="async"
+            />
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- Order ticket pinned to the disc -->
+    <div
+      class="gi-ticket absolute z-20 right-[33vw] bottom-[13vh] w-[188px] bg-carta px-4 pt-3 pb-4 rotate-[-4deg] shadow-[0_2px_3px_rgb(36_24_16/0.28)]"
+      aria-live="polite"
+    >
+      <div class="flex items-baseline justify-between border-b border-espresso pb-1 text-[12px]">
+        <span>Commande</span><span class="tabular-nums" data-ticket-price>{pizzas[0].price} €</span>
+      </div>
+      <p class="mt-1 font-bodoni font-black leading-none text-[64px] tabular-nums" style="font-variation-settings: 'opsz' 11">
+        N°<span data-ticket-n>{pizzas[0].n}</span>
+      </p>
+      <p class="text-[15px] font-semibold" data-ticket-name>{pizzas[0].name}</p>
+    </div>
+
+    <!-- Name, at poster scale -->
+    <h1
+      class="relative z-20 pl-[2.6vw] pt-[2.5vh] font-bodoni font-black leading-[0.86] tracking-[-0.01em] text-[min(16.5vw,30vh)]"
+      style="font-variation-settings: 'opsz' 11"
+    >
+      <span class="gi-word block">Stella</span>
+      <span class="gi-word block italic pl-[9vw]">d’Oro</span>
+    </h1>
+
+    <!-- The list: numbered because a pizzeria menu is numbered -->
+    <div class="absolute z-20 left-[2.6vw] bottom-[5vh] w-[min(47vw,720px)]">
+      <div class="flex items-baseline justify-between border-b-[3px] border-espresso pb-2">
+        <h2 class="font-bodoni italic font-bold text-[26px]" style="font-variation-settings: 'opsz' 11">Le pizze</h2>
+        <span class="text-[13px]">Sur place ou à emporter</span>
+      </div>
+      <ol>
+        {
+          pizzas.map((p, i) => (
+            <li class="border-b border-espresso">
+              <button
+                type="button"
+                class="gi-row grid w-full grid-cols-[64px_1fr_auto] items-baseline gap-4 px-2 py-[10px] text-left"
+                data-n={p.n}
+                data-name={p.name}
+                data-price={p.price}
+                aria-pressed={i === 0 ? 'true' : 'false'}
+              >
+                <span
+                  class="font-bodoni font-black text-[30px] leading-none tabular-nums"
+                  style="font-variation-settings: 'opsz' 11"
+                >
+                  {p.n}
+                </span>
+                <span>
+                  <span class="block text-[18px] font-semibold leading-tight">{p.name}</span>
+                  <span class="block text-[14px] leading-snug opacity-80">{p.ingredients}</span>
+                </span>
+                <span class="text-[16px] font-medium tabular-nums">{p.price}</span>
+              </button>
+            </li>
+          ))
+        }
+      </ol>
+      <a class="gi-all mt-4 inline-flex items-baseline gap-3 text-[16px] font-semibold" href="#">
+        <span class="gi-all-label">Voir toute la carte</span>
+        <span class="text-[13px] font-normal">pizzas, paste, dolci</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .gi-pie {
+    width: calc(var(--s) * 100%);
+    left: calc(50% - var(--cx) * var(--s) * 100%);
+    top: calc(50% - var(--cy) * var(--s) * var(--ar) * 100%);
+    opacity: 0;
+    transition: opacity 520ms ease 240ms;
+  }
+  .gi-pie.is-active {
+    opacity: 1;
+  }
+
+  .gi-turn {
+    transform: rotate(calc(var(--turn, 0deg) + var(--scroll, 0deg)));
+    transition: transform 1100ms var(--ease-in-out-strong);
+  }
+
+  /* Active row inverts, like a line struck through on the order pad */
+  .gi-row {
+    transition:
+      background-color 180ms ease,
+      color 180ms ease;
+  }
+  .gi-row:hover {
+    background-color: rgb(36 24 16 / 0.08);
+  }
+  .gi-row[aria-pressed='true'] {
+    background-color: var(--color-espresso);
+    color: var(--color-giallo);
+  }
+
+  .gi-nav {
+    transition:
+      background-color 180ms ease,
+      color 180ms ease;
+  }
+  .gi-nav:hover,
+  .gi-nav:focus-visible {
+    background: var(--color-espresso);
+    color: var(--color-giallo);
+  }
+  .gi-book {
+    transition: transform 160ms var(--ease-out-strong);
+  }
+  .gi-book:active {
+    transform: scale(0.97);
+  }
+  .gi-all-label {
+    border-bottom: 2px solid currentColor;
+  }
+
+  .gi-ticket {
+    transition: transform 500ms var(--ease-out-strong);
+  }
+  .gi-ticket.is-bumped {
+    transform: rotate(-1deg) translateY(-6px);
+    transition-duration: 160ms;
+  }
+
+  /* Entrance: the disc rolls in from the right edge, once */
+  [data-gi] .gi-disc {
+    transform: translateX(40%) rotate(70deg);
+    opacity: 0;
+  }
+  [data-gi].is-in .gi-disc {
+    transform: none;
+    opacity: 1;
+    transition:
+      transform 1500ms var(--ease-out-strong),
+      opacity 500ms ease;
+  }
+  [data-gi] .gi-ticket {
+    opacity: 0;
+  }
+  [data-gi].is-in .gi-ticket {
+    opacity: 1;
+    transition:
+      opacity 400ms ease 1000ms,
+      transform 500ms var(--ease-out-strong);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-gi] .gi-disc,
+    [data-gi] .gi-ticket {
+      transform: none;
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-gi]');
+
+  if (root) {
+    const turn = root.querySelector<HTMLElement>('.gi-turn')!;
+    const pies = [...root.querySelectorAll<HTMLImageElement>('.gi-pie')];
+    const rows = [...root.querySelectorAll<HTMLButtonElement>('.gi-row')];
+    const ticket = root.querySelector<HTMLElement>('.gi-ticket')!;
+    const tN = root.querySelector<HTMLElement>('[data-ticket-n]')!;
+    const tName = root.querySelector<HTMLElement>('[data-ticket-name]')!;
+    const tPrice = root.querySelector<HTMLElement>('[data-ticket-price]')!;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let quarter = 0;
+
+    const observer = new IntersectionObserver(
+      (records) => {
+        if (records.some((r) => r.isIntersecting)) {
+          document.fonts.ready.then(() => requestAnimationFrame(() => root.classList.add('is-in')));
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(root);
+
+    const select = (row: HTMLButtonElement) => {
+      if (row.getAttribute('aria-pressed') === 'true') return;
+      rows.forEach((r) => r.setAttribute('aria-pressed', String(r === row)));
+      pies.forEach((p) => p.classList.toggle('is-active', p.dataset.n === row.dataset.n));
+
+      quarter += 1;
+      turn.style.setProperty('--turn', `${quarter * 90}deg`);
+
+      tN.textContent = row.dataset.n ?? '';
+      tName.textContent = row.dataset.name ?? '';
+      tPrice.textContent = `${row.dataset.price} €`;
+      if (!reduced) {
+        ticket.classList.add('is-bumped');
+        window.setTimeout(() => ticket.classList.remove('is-bumped'), 160);
+      }
+    };
+
+    rows.forEach((row) => {
+      row.addEventListener('click', () => select(row));
+      row.addEventListener('pointerenter', () => select(row));
+    });
+
+    // The disc turns very slowly as the page scrolls past it.
+    if (!reduced) {
+      let ticking = false;
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(() => {
+            const r = root.getBoundingClientRect();
+            turn.style.setProperty('--scroll', `${(-r.top * 0.06).toFixed(2)}deg`);
+            ticking = false;
+          });
+        },
+        { passive: true },
+      );
+    }
+  }
+</script>

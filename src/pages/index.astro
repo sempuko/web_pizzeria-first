@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteHeader from '../components/home/SiteHeader.astro';
+import Hero from '../components/home/Hero.astro';
+import Maison from '../components/home/Maison.astro';
+import Classiques from '../components/home/Classiques.astro';
+import Soiree from '../components/home/Soiree.astro';
+import Carte from '../components/home/Carte.astro';
+import Sophie from '../components/home/Sophie.astro';
+import Avis from '../components/home/Avis.astro';
+import Infos from '../components/home/Infos.astro';
+import Finale from '../components/home/Finale.astro';
+---
+
+<Base title="La Stella d’Oro, pizzeria et cucina italiana à Lyon">
+  <SiteHeader />
+  <main>
+    <Hero />
+    <Maison />
+    <Classiques />
+    <Soiree />
+    <Carte />
+    <Sophie />
+    <Avis />
+    <Infos />
+    <Finale />
+  </main>
+</Base>
+
+<script>
+  import '../scripts/reveal';
+</script>

@@ -1,0 +1,157 @@
+---
+// 05 — La carte. A printed menu spread: serif italic categories, tabular prices, rules.
+// One photograph sits in a grid cell like a picture pasted onto the menu.
+import Lines from '../Lines.astro';
+import { photo } from '../../lib/photo';
+
+const vini = photo('vini');
+
+type Item = { name: string; note?: string; price: string };
+type Category = { title: string; aside?: string; items: Item[] };
+
+const categories: Category[] = [
+  {
+    title: 'Antipasti',
+    items: [
+      { name: 'Bruschetta al pomodoro', note: 'pain grillé, tomate, ail, basilic', price: '7,00' },
+      { name: 'Burrata', note: 'tomates, huile d’olive, poivre', price: '12,00' },
+      { name: 'Antipasto misto', note: 'charcuterie, légumes marinés, olives', price: '13,50' },
+    ],
+  },
+  {
+    title: 'Pizze',
+    aside: 'aussi à emporter',
+    items: [
+      { name: 'Margherita', note: 'tomate, fior di latte, basilic', price: '10,50' },
+      { name: 'Regina', note: 'tomate, mozzarella, jambon, champignons', price: '12,50' },
+      { name: 'Calzone', note: 'pliée, garnie, généreuse', price: '13,00' },
+      { name: 'Quattro formaggi', note: 'mozzarella, gorgonzola, parmesan, chèvre', price: '13,50' },
+    ],
+  },
+  {
+    title: 'Pasta',
+    items: [
+      { name: 'Spaghetti alla carbonara', note: 'guanciale, œuf, pecorino', price: '14,00' },
+      { name: 'Lasagne al forno', note: 'bolognaise, béchamel, gratinées', price: '14,50' },
+      { name: 'Penne al gorgonzola', note: 'crème, gorgonzola, noix', price: '13,50' },
+      { name: 'Linguine alle vongole', note: 'palourdes, ail, persil, vin blanc', price: '16,00' },
+    ],
+  },
+  {
+    title: 'Dolci',
+    items: [
+      { name: 'Tiramisu della casa', price: '7,00' },
+      { name: 'Panna cotta', note: 'coulis de fruits rouges', price: '6,50' },
+      { name: 'Affogato al caffè', price: '6,00' },
+    ],
+  },
+  {
+    title: 'Vini',
+    aside: 'verre / bouteille',
+    items: [
+      { name: 'Chianti Classico', price: '6 / 29' },
+      { name: 'Montepulciano d’Abruzzo', price: '5,50 / 24' },
+      { name: 'Prosecco', price: '6 / 28' },
+    ],
+  },
+];
+---
+
+<section
+  id="carte"
+  class="relative bg-papier text-nuit px-5 pt-[clamp(110px,16vh,180px)] pb-[clamp(90px,12vh,150px)] lg:px-[3.4vw] lg:pt-[clamp(140px,20vh,220px)] lg:pb-[clamp(110px,14vh,170px)] font-archivo"
+  data-nav-section="carte"
+>
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <Lines
+      as="h2"
+      class="font-news italic text-[17vw] md:text-[10vw] lg:text-[6.2vw] leading-[0.95] tracking-[-0.02em]"
+      style="font-variation-settings: 'opsz' 72; font-weight: 300"
+      lines={['La carte']}
+    />
+    <p class="md:mb-3 max-w-[34ch] md:text-right text-[14px] leading-relaxed text-nuit/70">
+      Un extrait. La carte complète est sur place, et tout se commande aussi à emporter.
+    </p>
+  </div>
+
+  <div class="mt-6 h-[1.5px] bg-nuit" data-reveal="rule"></div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[6vw] lg:gap-x-[4vw]">
+    {
+      categories.map((c, i) => (
+        <div class:list={['pt-8 pb-10 lg:pb-12', { 'border-t border-nuit/20': i > 0, 'md:border-t-0': i === 1, 'lg:border-t-0': i === 2, 'md:border-t': i === 2 }]}>
+          <div class="flex items-baseline justify-between">
+            <h3 class="font-news italic text-[34px] leading-none" style="font-variation-settings: 'opsz' 36">
+              {c.title}
+            </h3>
+            {c.aside && <span class="text-[13px] text-nuit/65">{c.aside}</span>}
+          </div>
+          <ul class="mt-6">
+            {c.items.map((item) => (
+              <li class="ca-item relative grid grid-cols-[1fr_auto] items-baseline gap-x-6 py-[10px]">
+                <span class="text-[15px] font-medium">{item.name}</span>
+                <span class="text-[15px] tabular-nums">{item.price}</span>
+                {item.note && (
+                  <span class="col-span-2 font-news italic text-[15px] leading-snug text-nuit/70" style="font-variation-settings: 'opsz' 12">
+                    {item.note}
+                  </span>
+                )}
+                <span class="absolute inset-x-0 bottom-0 h-px bg-nuit/12" aria-hidden="true">
+                  <span class="ca-fill absolute inset-0 origin-left bg-tomate" />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+
+    <!-- Pasted photograph -->
+    <div class="hidden md:block border-t border-nuit/20 pt-8 pb-12">
+      <figure class="m-0">
+        <div class="aspect-[16/10] overflow-hidden" data-reveal="curtain" data-flow>
+          <img
+            src={vini.src}
+            srcset={vini.srcset}
+            sizes="(min-width: 1024px) 30vw, 45vw"
+            alt="Bouteilles de vin italien alignées"
+            class="grade h-full w-full object-cover"
+            loading="lazy"
+          />
+        </div>
+        <figcaption class="mt-2 font-news italic text-[14px] text-nuit/70" style="font-variation-settings: 'opsz' 12">
+          Des vins italiens, au verre ou à la bouteille.
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- The way out: the last line of the printed menu -->
+  <a href="#" class="ca-cta mt-4 flex flex-col gap-3 md:flex-row md:items-baseline md:justify-between border-y-[1.5px] border-nuit py-6 lg:py-7">
+    <span class="ca-cta-label font-news italic text-[10vw] md:text-[6vw] lg:text-[4vw] leading-none" style="font-variation-settings: 'opsz' 60; font-weight: 300">Voir la carte complète</span>
+    <span class="text-[14px] text-nuit/70">À emporter&#8239;: appelez le 04 78 00 00 00</span>
+  </a>
+</section>
+
+<style>
+  .ca-fill {
+    transform: scaleX(0);
+    transition: transform 420ms var(--ease-out-strong);
+  }
+  .ca-item:hover .ca-fill {
+    transform: scaleX(1);
+  }
+  .ca-cta {
+    transition: color 200ms ease, border-color 200ms ease;
+  }
+  .ca-cta:hover {
+    color: var(--color-tomate);
+    border-color: var(--color-tomate);
+  }
+  .ca-cta-label {
+    transition: transform 420ms var(--ease-out-strong);
+  }
+  .ca-cta:hover .ca-cta-label {
+    transform: translateX(10px);
+  }
+</style>

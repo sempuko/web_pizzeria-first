@@ -1,0 +1,212 @@
+---
+// 04 — Une soirée, rue Jacques Stella. An evening told as five timed frames.
+// The chapter title holds still while irregular frames pass, like a photo essay.
+// Mobile: no sticky column; each frame carries its own chapter title and caption.
+import Lines from '../Lines.astro';
+import { photo, type PhotoName } from '../../lib/photo';
+
+const frames = [
+  {
+    time: '17h45',
+    title: 'Les gestes',
+    caption: 'Avant le service, tout se prépare à la main. Les mêmes gestes, chaque jour.',
+    photo: 'herbes' as PhotoName,
+    mobile: 'w-[78vw] ml-auto mr-5 md:w-[56vw]',
+    alt: 'Mains qui émincent des herbes sur une planche',
+    ratio: 'aspect-[2/3]',
+    box: 'lg:w-[28vw] lg:ml-[22vw] lg:mr-0',
+    position: '50% 40%',
+  },
+  {
+    time: '18h30',
+    title: 'Le four',
+    caption: 'La première pizza de la soirée, encore fumante.',
+    photo: 'filante' as PhotoName,
+    mobile: 'w-full md:w-[70vw]',
+    alt: 'Pizza sortie du four, le fromage file',
+    ratio: 'aspect-[4/5]',
+    box: 'lg:w-[30vw] lg:ml-[2vw] lg:mr-0',
+    position: '50% 62%',
+  },
+  {
+    time: '19h00',
+    title: 'La salle',
+    caption: 'Les nappes sont mises, les lampes allumées. La salle est petite, c’est ce qui la rend chaleureuse.',
+    photo: 'salle-nuit' as PhotoName,
+    mobile: 'w-[72vw] ml-5 md:w-[50vw] md:ml-[8vw]',
+    alt: 'Salle de restaurant le soir, tables dressées',
+    ratio: 'aspect-[3/4]',
+    box: 'lg:w-[34vw] lg:ml-[20vw] lg:mr-0',
+    position: '50% 60%',
+  },
+  {
+    time: '20h15',
+    title: 'La cuisine',
+    caption: 'Le coup de feu. Ça parle fort, ça sent bon.',
+    photo: 'cuisinier' as PhotoName,
+    mobile: 'w-full',
+    alt: 'Cuisinier au fourneau, flamme dans la poêle',
+    ratio: 'aspect-[3/2]',
+    box: 'lg:w-[52vw] lg:ml-[4vw] lg:mr-0',
+    position: '40% 50%',
+  },
+  {
+    time: '21h30',
+    title: 'Les habitués',
+    caption: 'Certains viennent depuis des années. Ils n’ont plus besoin de la carte.',
+    photo: 'habituee' as PhotoName,
+    mobile: 'w-[86vw] ml-auto md:w-[70vw] md:mr-[8vw]',
+    alt: 'Cliente qui dîne, lumière chaude du soir',
+    ratio: 'aspect-[16/10]',
+    box: 'lg:w-[42vw] lg:ml-[16vw] lg:mr-0',
+    position: '60% 40%',
+  },
+];
+---
+
+<section
+  id="soiree"
+  class="so relative bg-nuit text-bougie font-archivo pt-[clamp(120px,18vh,200px)] pb-[clamp(110px,16vh,200px)] lg:pt-[clamp(150px,22vh,240px)] lg:pb-[clamp(150px,22vh,240px)]"
+  data-so
+  data-nav-section="maison"
+>
+  <Lines
+    as="h2"
+    class="mx-5 lg:ml-[3.4vw] font-news italic text-[11vw] md:text-[7.4vw] lg:text-[4.4vw] leading-[1.05] tracking-[-0.015em]"
+    style="font-variation-settings: 'opsz' 60; font-weight: 300"
+    lines={['Une soirée,', 'rue Jacques Stella.']}
+  />
+
+  <div class="mt-16 lg:mt-[15vh] lg:grid lg:grid-cols-[36vw_1fr]">
+    <!-- Held chapter (desktop) -->
+    <div class="relative hidden lg:block">
+      <div class="sticky top-[calc(64px+20vh)] h-[52vh] pl-[3.4vw]">
+        <div class="flex items-baseline gap-4 text-[13px] text-bougie/65">
+          <span class="so-time tabular-nums text-bougie">{frames[0].time}</span>
+          <span class="tabular-nums"><span class="so-num">1</span> sur {frames.length}</span>
+        </div>
+        <div class="mt-3 h-px w-[24vw] bg-bougie/15">
+          <span class="so-progress block h-full origin-left bg-braise" style={`transform: scaleX(${1 / frames.length})`}></span>
+        </div>
+
+        <div class="relative mt-[5vh]">
+          {
+            frames.map((f, i) => (
+              <div class:list={['so-chapter absolute inset-x-0 top-0', { 'is-current': i === 0 }]} data-chapter={i}>
+                <p
+                  class="line uppercase leading-[0.95] text-[3.7vw] whitespace-nowrap"
+                  style="font-variation-settings: 'wdth' 125; font-weight: 250"
+                >
+                  <span>{f.title}</span>
+                </p>
+                <p
+                  class="line mt-5 max-w-[27ch] font-news italic text-[21px] leading-snug text-bougie/80"
+                  style="font-variation-settings: 'opsz' 20"
+                >
+                  <span>{f.caption}</span>
+                </p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Frames -->
+    <ol class="lg:pr-[3.4vw]">
+      {
+        frames.map((f, i) => {
+          const p = photo(f.photo);
+          return (
+            <li class:list={['so-frame', { 'mt-24 lg:mt-[20vh]': i > 0 }]} data-frame={i}>
+              <div class="mx-5 mb-6 lg:hidden" data-reveal="lines">
+                <p class="flex gap-4 text-[13px] tabular-nums text-bougie/65">
+                  <span class="text-bougie">{f.time}</span>
+                  <span>{i + 1} sur {frames.length}</span>
+                </p>
+                <p class="line mt-3 uppercase leading-none text-[8.6vw] md:text-[6vw]" style="font-variation-settings: 'wdth' 125; font-weight: 250">
+                  <span>{f.title}</span>
+                </p>
+                <p class="mt-3 max-w-[30ch] font-news italic text-[19px] leading-snug text-bougie/80" style="font-variation-settings: 'opsz' 20">
+                  {f.caption}
+                </p>
+              </div>
+              <figure class={`m-0 ${f.mobile} ${f.box}`}>
+                <div class={`${f.ratio} overflow-hidden`} data-reveal="curtain" data-flow>
+                  <img
+                    src={p.src}
+                    srcset={p.srcset}
+                    sizes="(min-width: 1024px) 52vw, 100vw"
+                    alt={f.alt}
+                    class="grade h-full w-full object-cover"
+                    style={`object-position:${f.position}`}
+                    loading="lazy"
+                  />
+                </div>
+                <figcaption class="mt-3 hidden lg:block text-[13px] tabular-nums text-bougie/60">{f.time}</figcaption>
+              </figure>
+            </li>
+          );
+        })
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  /* Chapter swap reuses the « sous-titre » rise: old lines leave upward, new ones rise */
+  .so-chapter .line > span {
+    transform: translateY(140%);
+    transition: transform 700ms var(--ease-out-strong);
+  }
+  .so-chapter.is-past .line > span {
+    transform: translateY(-140%);
+  }
+  .so-chapter.is-current .line > span {
+    transform: none;
+    transition-delay: 120ms;
+  }
+  .so-chapter.is-current .line + .line > span {
+    transition-delay: 200ms;
+  }
+  .so-progress {
+    transition: transform 700ms var(--ease-in-out-strong);
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-so]');
+
+  if (root) {
+    const chapters = [...root.querySelectorAll<HTMLElement>('.so-chapter')];
+    const frames = [...root.querySelectorAll<HTMLElement>('.so-frame')];
+    const time = root.querySelector<HTMLElement>('.so-time')!;
+    const num = root.querySelector<HTMLElement>('.so-num')!;
+    const progress = root.querySelector<HTMLElement>('.so-progress')!;
+    const times = frames.map((f) => f.querySelector('figcaption')?.textContent ?? '');
+    let current = 0;
+
+    const setChapter = (index: number) => {
+      if (index === current) return;
+      current = index;
+      chapters.forEach((c, i) => {
+        c.classList.toggle('is-current', i === index);
+        c.classList.toggle('is-past', i < index);
+      });
+      time.textContent = times[index];
+      num.textContent = String(index + 1);
+      progress.style.transform = `scaleX(${(index + 1) / frames.length})`;
+    };
+
+    // A frame becomes the chapter when it crosses the middle band of the viewport.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setChapter(Number((entry.target as HTMLElement).dataset.frame));
+        }
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    frames.forEach((f) => observer.observe(f));
+  }
+</script>

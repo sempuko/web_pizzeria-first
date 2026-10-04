@@ -1,0 +1,285 @@
+---
+// 01 — Editorial Heritage · « La carte ouverte »
+// The hero is the printed menu, opened on the table. The index previews each dish.
+
+const plates = [
+  {
+    id: 'pizze',
+    label: 'Pizze',
+    dishes: 'Margherita, regina, calzone',
+    src: '/img/mains-pizza.jpg',
+    position: '50% 62%',
+    caption: 'La pizza, finie à la main avant de partir en salle.',
+  },
+  {
+    id: 'paste',
+    label: 'Paste',
+    dishes: 'Carbonara, lasagne, gorgonzola',
+    src: '/img/carbonara.jpg',
+    position: '42% 50%',
+    caption: 'Spaghetti alla carbonara, guanciale et pecorino.',
+  },
+  {
+    id: 'dolci',
+    label: 'Dolci',
+    dishes: 'Tiramisu della casa',
+    src: '/img/tiramisu.jpg',
+    position: '50% 70%',
+    caption: 'Le tiramisu de la maison, à partager ou non.',
+  },
+];
+---
+
+<section
+  id="etude-01"
+  class="eh grain relative h-svh min-h-[720px] overflow-hidden bg-paper text-ink"
+  style="--grain-opacity: .28"
+  data-eh
+>
+  <!-- Photograph: pasted into the page, bleeding off the top edge -->
+  <figure class="absolute top-0 right-[4.5vw] w-[34vw] h-[84%] m-0">
+    <div class="eh-plate-stack relative h-full w-full overflow-hidden bg-paper-deep">
+      {
+        plates.map((p, i) => (
+          <img
+            src={p.src}
+            alt=""
+            data-plate={p.id}
+            class="eh-plate absolute inset-0 h-full w-full object-cover"
+            style={`object-position:${p.position}; z-index:${i === 0 ? 2 : 0}`}
+            decoding="async"
+          />
+        ))
+      }
+    </div>
+    <figcaption
+      class="eh-caption mt-3 font-news italic text-[14px] leading-snug text-ink-soft"
+      style="font-variation-settings: 'opsz' 12"
+      aria-live="polite"
+    >
+      {plates[0].caption}
+    </figcaption>
+  </figure>
+
+  <!-- Navigation: a menu's running head, not a toolbar -->
+  <header class="relative z-10 flex items-baseline gap-[4.2vw] px-[4.5vw] pt-8 w-[62vw]">
+    <a href="#etude-01" class="flex items-baseline gap-2 font-news text-[19px] tracking-[-0.01em]">
+      <svg class="w-[13px] h-[13px] -translate-y-[1px] fill-vin rotate-[-8deg]" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 1.5l2.9 7.3 7.6.5-5.9 4.9 1.9 7.6L12 17.6l-6.5 4.2 1.9-7.6L1.5 9.3l7.6-.5z" />
+      </svg>
+      La Stella d’Oro
+    </a>
+    <nav class="ml-auto flex gap-8 font-news text-[17px]" aria-label="Navigation principale">
+      <a class="eh-link" href="#">La carte</a>
+      <a class="eh-link" href="#">La maison</a>
+      <a class="eh-link" href="#">Nous trouver</a>
+    </nav>
+  </header>
+
+  <!-- Title: set as a cover line, the second line runs over the photograph -->
+  <div class="relative z-20 px-[4.5vw] mt-[11vh]">
+    <h1
+      class="font-news leading-[0.84] tracking-[-0.03em] text-[13.2vw] mix-blend-multiply"
+      style="font-variation-settings: 'opsz' 72; font-weight: 340"
+    >
+      <span class="block overflow-hidden pb-[0.06em]"><span class="eh-line block">La Stella</span></span>
+      <span class="block overflow-hidden pb-[0.08em] pl-[31vw]"
+        ><span class="eh-line block italic" style="font-weight: 400">d’Oro</span></span
+      >
+    </h1>
+    <!-- Set into the indent of the second line, as a magazine would -->
+    <p
+      class="eh-rise absolute left-[4.9vw] bottom-[2.2vw] font-news italic text-[18px] leading-[1.35] text-ink-soft"
+      style="font-variation-settings: 'opsz' 16"
+    >
+      Trattoria &amp; pizzeria<br />Lyon 2<sup class="text-[0.7em]">e</sup>
+    </p>
+  </div>
+
+  <!-- Lower register: positioning, the carte index, actions -->
+  <div class="absolute z-20 left-[4.5vw] bottom-[7vh] w-[56vw] grid grid-cols-[1fr_1.25fr] gap-[3.2vw] items-end">
+    <div class="eh-rise">
+      <p class="font-news text-[21px] leading-[1.38] text-ink max-w-[30ch]" style="font-variation-settings: 'opsz' 20">
+        Une adresse italienne à deux pas de la République. On y vient une fois, on y revient.
+      </p>
+      <p class="mt-5 font-news italic text-[15px] text-ink-soft" style="font-variation-settings: 'opsz' 12">
+        3 rue Jacques Stella, 69002 Lyon
+      </p>
+    </div>
+
+    <div class="eh-rise">
+      <ul class="eh-index border-t border-ink/25" aria-label="Aperçu de la carte">
+        {
+          plates.map((p, i) => (
+            <li class="border-b border-ink/25">
+              <button
+                type="button"
+                class="eh-entry group flex w-full items-baseline gap-3 py-[11px] text-left"
+                data-target={p.id}
+                data-caption={p.caption}
+                aria-pressed={i === 0 ? 'true' : 'false'}
+              >
+                <span class="font-news text-[24px] leading-none" style="font-variation-settings: 'opsz' 36">
+                  {p.label}
+                </span>
+                <span class="eh-leader flex-1 translate-y-[-4px] border-b border-dotted border-ink/45" aria-hidden="true" />
+                <span
+                  class="font-news italic text-[15px] text-ink-soft"
+                  style="font-variation-settings: 'opsz' 12"
+                >
+                  {p.dishes}
+                </span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-6 flex items-center gap-7">
+        <a
+          href="#"
+          class="eh-btn inline-flex items-center bg-vin px-5 py-[11px] font-news text-[17px] text-paper"
+          >Voir la carte</a
+        >
+        <a href="#" class="eh-link font-news text-[17px]">Réserver une table</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .eh-link {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    padding-bottom: 2px;
+    transition: background-size 260ms var(--ease-out-strong);
+  }
+  .eh-link:hover,
+  .eh-link:focus-visible {
+    background-size: 100% 1px;
+  }
+
+  .eh-btn {
+    transition:
+      transform 160ms var(--ease-out-strong),
+      background-color 200ms ease;
+  }
+  .eh-btn:hover {
+    background-color: #64200f;
+  }
+  .eh-btn:active {
+    transform: scale(0.97);
+  }
+
+  /* The index: the active line is inked in vin cuit, the leader tightens */
+  .eh-entry > span:first-child {
+    transition: color 200ms ease;
+  }
+  .eh-entry .eh-leader {
+    transition: border-color 200ms ease;
+  }
+  .eh-entry[aria-pressed='true'] > span:first-child {
+    color: var(--color-vin);
+    font-style: italic;
+  }
+  .eh-entry[aria-pressed='true'] .eh-leader {
+    border-color: var(--color-vin);
+  }
+
+  /* One orchestrated entrance: photo rises from the bottom, then the title settles */
+  [data-eh] .eh-plate-stack {
+    clip-path: inset(100% 0 0 0);
+  }
+  [data-eh] .eh-line {
+    transform: translateY(105%);
+  }
+  [data-eh] .eh-rise,
+  [data-eh] .eh-caption {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  [data-eh].is-in .eh-plate-stack {
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 1300ms var(--ease-in-out-strong);
+  }
+  [data-eh].is-in .eh-line {
+    transform: none;
+    transition: transform 1100ms var(--ease-out-strong) 550ms;
+  }
+  [data-eh].is-in .eh-line.italic {
+    transition-delay: 680ms;
+  }
+  [data-eh].is-in .eh-rise,
+  [data-eh].is-in .eh-caption {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 700ms ease 1100ms,
+      transform 900ms var(--ease-out-strong) 1100ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-eh] .eh-plate-stack {
+      clip-path: none;
+    }
+    [data-eh] .eh-line,
+    [data-eh] .eh-rise,
+    [data-eh] .eh-caption {
+      transform: none;
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-eh]');
+
+  if (root) {
+    const plates = [...root.querySelectorAll<HTMLImageElement>('.eh-plate')];
+    const entries = [...root.querySelectorAll<HTMLButtonElement>('.eh-entry')];
+    const caption = root.querySelector<HTMLElement>('.eh-caption');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let current = plates[0]?.dataset.plate;
+    let layer = 3;
+
+    // Start the entrance once fonts are in, so the title doesn't reflow mid-rise.
+    const start = () => requestAnimationFrame(() => root.classList.add('is-in'));
+    const observer = new IntersectionObserver(
+      (records) => {
+        if (records.some((r) => r.isIntersecting)) {
+          document.fonts.ready.then(start);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(root);
+
+    // Index → plate. A top-down wipe, like turning the page of the carte.
+    const show = (entry: HTMLButtonElement) => {
+      const id = entry.dataset.target;
+      if (!id || id === current) return;
+      const next = plates.find((p) => p.dataset.plate === id);
+      if (!next) return;
+      current = id;
+
+      entries.forEach((e) => e.setAttribute('aria-pressed', String(e === entry)));
+      if (caption) caption.textContent = entry.dataset.caption ?? '';
+
+      next.style.zIndex = String(++layer);
+      if (!reduced) {
+        next.animate(
+          [
+            { clipPath: 'inset(0 0 100% 0)', transform: 'scale(1.06)' },
+            { clipPath: 'inset(0 0 0% 0)', transform: 'scale(1)' },
+          ],
+          { duration: 760, easing: 'cubic-bezier(0.77, 0, 0.175, 1)' },
+        );
+      }
+    };
+
+    entries.forEach((entry) => {
+      entry.addEventListener('pointerenter', () => show(entry));
+      entry.addEventListener('focus', () => show(entry));
+      entry.addEventListener('click', () => show(entry));
+    });
+  }
+</script>

@@ -1,0 +1,24 @@
+---
+// A statement split into masked lines for the « sous-titre » reveal.
+import type { HTMLTag } from 'astro/types';
+
+interface Props {
+  lines: string[];
+  as?: HTMLTag;
+  class?: string;
+  style?: string;
+  delay?: number;
+}
+
+const { lines, as: Tag = 'p', class: className, style, delay = 0 } = Astro.props;
+---
+
+<Tag class={className} style={`--delay:${delay}ms;${style ?? ''}`} data-reveal="lines">
+  {
+    lines.map((line, i) => (
+      <span class="line" style={`--i:${i}`}>
+        <span set:html={line} />
+      </span>
+    ))
+  }
+</Tag>

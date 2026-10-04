@@ -1,0 +1,191 @@
+---
+// The top letterbox bar of the hero, kept for the whole film.
+// Desktop: wordmark, three links, one action. Mobile: wordmark, action, « Menu »
+// opening a full-screen panel that drops like the shutter.
+
+const links = [
+  { href: '#maison', label: 'La maison', section: 'maison' },
+  { href: '#carte', label: 'La carte', section: 'carte' },
+  { href: '#infos', label: 'Nous trouver', section: 'infos' },
+];
+---
+
+<header class="site-header fixed inset-x-0 top-0 z-50 h-14 lg:h-16 bg-nuit text-bougie font-archivo text-[13px]" data-header>
+  <div class="relative z-10 flex h-full items-center px-5 lg:px-[3.4vw]">
+    <a
+      href="#ouverture"
+      class="flex items-center gap-3 uppercase tracking-[0.3em] text-[12px] lg:text-[13px]"
+      style="font-variation-settings: 'wdth' 125; font-weight: 500"
+    >
+      <svg class="w-[11px] h-[11px] fill-laiton" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 1.5l2.9 7.3 7.6.5-5.9 4.9 1.9 7.6L12 17.6l-6.5 4.2 1.9-7.6L1.5 9.3l7.6-.5z" />
+      </svg>
+      Stella d’Oro
+    </a>
+
+    <nav class="ml-auto hidden lg:flex items-center gap-9 tracking-[0.03em]" aria-label="Navigation principale">
+      {
+        links.map((l) => (
+          <a class="hd-link relative py-2" href={l.href} data-nav={l.section}>
+            {l.label}
+            <span class="hd-rule absolute inset-x-0 bottom-0 h-px" aria-hidden="true" />
+          </a>
+        ))
+      }
+      <a class="hd-cta press border border-laiton/60 px-4 py-[9px]" href="#reserver">Réserver une table</a>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-5 lg:hidden">
+      <a class="hd-cta press border border-laiton/60 px-3 py-[7px]" href="#reserver">Réserver</a>
+      <button
+        type="button"
+        class="hd-toggle py-2 text-[13px] tracking-[0.03em]"
+        aria-expanded="false"
+        aria-controls="menu-mobile"
+        data-menu-toggle
+      >
+        <span data-menu-label>Menu</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile panel -->
+  <div id="menu-mobile" class="hd-panel fixed inset-x-0 top-14 bottom-0 bg-nuit lg:hidden" data-menu-panel inert>
+    <nav class="flex h-full flex-col px-5 pt-[8vh] pb-8" aria-label="Navigation mobile">
+      <ul class="border-t border-bougie/15">
+        {
+          [{ href: '#ouverture', label: 'Accueil' }, ...links, { href: '#reserver', label: 'Réserver' }].map((l, i) => (
+            <li class="border-b border-bougie/15">
+              <a
+                href={l.href}
+                class="hd-panel-link block py-4 uppercase leading-none text-[8.4vw]"
+                style={`font-variation-settings: 'wdth' 125; font-weight: 250; --i:${i}`}
+              >
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-auto text-[14px] leading-relaxed text-bougie/70">
+        <p>3 rue Jacques Stella, 69002 Lyon</p>
+        <p>Du mardi au samedi, midi et soir</p>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style>
+  /* The header arrives after the shutter, on first load only */
+  .site-header {
+    animation: hd-in 500ms ease 950ms both;
+  }
+  @keyframes hd-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  .hd-link {
+    color: rgb(241 226 196 / 0.78);
+    transition: color 200ms ease;
+  }
+  .hd-link:hover,
+  .hd-link:focus-visible,
+  .hd-link.is-current {
+    color: var(--color-bougie);
+  }
+  .hd-rule {
+    background: var(--color-bougie);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition:
+      transform 320ms var(--ease-out-strong),
+      background-color 200ms ease;
+  }
+  .hd-link:hover .hd-rule,
+  .hd-link:focus-visible .hd-rule {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  .hd-link.is-current .hd-rule {
+    background: var(--color-braise);
+    transform: scaleX(1);
+  }
+
+  .hd-cta:hover {
+    background: var(--color-braise);
+    border-color: var(--color-braise);
+    color: var(--color-nuit);
+  }
+
+  /* Mobile panel: drops from the bar like the shutter */
+  .hd-panel {
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 420ms var(--ease-in-out-strong);
+  }
+  [data-header].is-open .hd-panel {
+    clip-path: inset(0 0 0 0);
+  }
+  .hd-panel-link {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 300ms ease,
+      transform 400ms var(--ease-out-strong);
+  }
+  [data-header].is-open .hd-panel-link {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(160ms + var(--i) * 40ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+
+  if (header) {
+    const toggle = header.querySelector<HTMLButtonElement>('[data-menu-toggle]')!;
+    const label = header.querySelector<HTMLElement>('[data-menu-label]')!;
+    const panel = header.querySelector<HTMLElement>('[data-menu-panel]')!;
+
+    const setOpen = (open: boolean) => {
+      header.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      label.textContent = open ? 'Fermer' : 'Menu';
+      panel.inert = !open;
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+    };
+
+    toggle.addEventListener('click', () => setOpen(!header.classList.contains('is-open')));
+    panel.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && header.classList.contains('is-open')) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => e.matches && setOpen(false));
+
+    // Current section: a braise rule under the matching link.
+    const navLinks = [...header.querySelectorAll<HTMLAnchorElement>('[data-nav]')];
+    const sections = [...document.querySelectorAll<HTMLElement>('[data-nav-section]')];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const current = (entry.target as HTMLElement).dataset.navSection;
+          navLinks.forEach((l) => l.classList.toggle('is-current', l.dataset.nav === current));
+        }
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    sections.forEach((s) => observer.observe(s));
+  }
+</script>

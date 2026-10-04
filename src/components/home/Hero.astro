@@ -1,0 +1,326 @@
+---
+// 01 — Ouverture · « La saracinesca » (selected in PASS 01)
+// 19h, rue Jacques Stella: the shutter rolls up and the evening begins.
+// The top letterbox is now the fixed SiteHeader; the frame starts below it.
+// Mobile/tablet: taller frame, the title on two justified lines, still crossing the edge.
+import { photo } from '../../lib/photo';
+
+const scenes = [
+  {
+    id: 'four',
+    label: 'Le four',
+    ...photo('four'),
+    position: '50% 58%',
+    subtitle: 'Ce soir, on vous garde une table.',
+  },
+  {
+    id: 'salle',
+    label: 'La salle',
+    ...photo('brindisi'),
+    position: '50% 45%',
+    subtitle: 'Comme à la maison.',
+  },
+  {
+    id: 'paton',
+    label: 'Le pâton',
+    ...photo('calzone-mains'),
+    position: '50% 58%',
+    subtitle: 'Généreux, comme toujours.',
+  },
+];
+---
+
+<section
+  id="ouverture"
+  class="ct relative h-svh min-h-[640px] lg:min-h-[720px] overflow-hidden bg-nuit text-bougie font-archivo"
+  data-ct
+  data-nav-section="none"
+>
+  <!-- The frame -->
+  <div class="ct-frame absolute inset-x-0 top-14 bottom-[35%] lg:top-16 lg:bottom-[150px] overflow-hidden">
+    <div class="ct-drift absolute -inset-[3%]">
+      {
+        scenes.map((s, i) => (
+          <img
+            src={s.src}
+            srcset={s.srcset}
+            sizes="106vw"
+            alt=""
+            data-scene={s.id}
+            class:list={['ct-scene absolute inset-0 h-full w-full object-cover', { 'is-active': i === 0 }]}
+            style={`object-position:${s.position}`}
+            fetchpriority={i === 0 ? 'high' : 'low'}
+            decoding="async"
+          />
+        ))
+      }
+    </div>
+    <!-- Grade: a printed-light vignette so cream type holds on the image -->
+    <div class="ct-grade pointer-events-none absolute inset-0" aria-hidden="true"></div>
+
+    <!-- Subtitle, set like a film subtitle -->
+    <p
+      class="ct-subtitle absolute left-1/2 bottom-[22%] lg:bottom-[26%] w-[84%] lg:w-auto -translate-x-1/2 text-center lg:whitespace-nowrap font-news italic text-[clamp(19px,2vw,30px)] leading-snug text-bougie"
+      style="font-variation-settings: 'opsz' 24"
+      aria-live="polite"
+    >
+      {scenes[0].subtitle}
+    </p>
+
+    <!-- The shutter -->
+    <div class="ct-shutter absolute inset-0 z-20" aria-hidden="true">
+      <div class="ct-shutter-bar absolute inset-x-0 bottom-0 h-[14px] lg:h-[18px]"></div>
+    </div>
+  </div>
+
+  <!-- Title: crosses the frame edge — half in the picture, half in the letterbox -->
+  <h1
+    class="ct-title absolute z-30 inset-x-5 top-[calc(65%-0.56em)] lg:inset-x-[3.4vw] lg:top-auto lg:bottom-[calc(150px-0.43em)] pointer-events-none flex flex-wrap lg:flex-nowrap justify-between uppercase leading-[0.86] lg:leading-[0.8] text-[13.4vw] lg:text-[min(8.6vw,172px)] text-bougie"
+    style="font-variation-settings: 'wdth' 125; font-weight: 250"
+  >
+    <span class="ct-word" style="--i:0">La</span><span class="ct-word" style="--i:1">Stella</span><span class="basis-full h-0 lg:hidden" aria-hidden="true"></span><span class="ct-word ml-auto lg:ml-0" style="--i:2">d’Oro</span>
+  </h1>
+
+  <!-- Bottom letterbox: credits and the scene picker -->
+  <footer
+    class="ct-credits absolute inset-x-0 bottom-0 z-30 flex flex-col-reverse gap-6 px-5 pb-6 lg:h-[150px] lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-end lg:gap-0 lg:px-[3.4vw] lg:pb-[26px] text-[13px]"
+  >
+    <div class="flex items-end justify-between lg:block">
+      <div class="leading-[1.65] text-bougie/70">
+        <p>Pizzeria, cucina italiana</p>
+        <p>3 rue Jacques Stella, Lyon 2<sup>e</sup></p>
+      </div>
+      <a class="ct-link u-link text-[14px] lg:hidden" href="#carte">Voir la carte</a>
+    </div>
+
+    <ol class="flex justify-between gap-4 lg:justify-start lg:gap-10" aria-label="Scènes">
+      {
+        scenes.map((s, i) => (
+          <li class="flex-1 lg:flex-none">
+            <button
+              type="button"
+              class="ct-pick group relative w-full pt-4 pb-1 text-left"
+              data-target={s.id}
+              data-subtitle={s.subtitle}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+            >
+              <span class="ct-pick-rule absolute left-0 top-0 h-px w-full bg-bougie/25">
+                <span class="ct-pick-fill absolute inset-0 origin-left bg-braise" />
+              </span>
+              <span class="tabular-nums text-bougie/60 mr-2">{String(i + 1).padStart(2, '0')}</span>
+              <span class="ct-pick-label">{s.label}</span>
+            </button>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="hidden lg:flex justify-end">
+      <a class="ct-link u-link text-[14px]" href="#carte">Voir la carte</a>
+    </div>
+  </footer>
+</section>
+
+<style>
+  .ct-scene {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(1.04);
+    transition:
+      opacity 1100ms var(--ease-out-strong),
+      filter 1100ms var(--ease-out-strong),
+      transform 2400ms var(--ease-out-strong);
+  }
+  .ct-scene.is-active {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+
+  /* Lights on: the frame starts as an unlit room and warms as the shutter rises */
+  .ct-drift {
+    filter: brightness(0.25) saturate(0.6);
+    will-change: transform;
+  }
+  [data-ct].is-open .ct-drift {
+    filter: brightness(0.86) saturate(0.95) contrast(1.06);
+    transition: filter 1500ms ease 200ms;
+  }
+
+  .ct-grade {
+    background:
+      radial-gradient(120% 90% at 50% 40%, transparent 45%, rgb(21 14 10 / 0.55) 100%),
+      linear-gradient(to top, rgb(21 14 10 / 0.6), transparent 42%);
+  }
+
+  /* Ribbed steel shutter (saracinesca) */
+  .ct-shutter {
+    background-color: #2a221c;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      #3a3029 0 2px,
+      #2a221c 2px 13px,
+      #1a1410 13px 15px
+    );
+    transform: translateY(0);
+  }
+  .ct-shutter-bar {
+    background: #463a30;
+    border-top: 1px solid #5a4b3e;
+  }
+  [data-ct].is-open .ct-shutter {
+    transform: translateY(-101%);
+    transition: transform 1150ms var(--ease-in-out-strong) 120ms;
+  }
+
+  .ct-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(18%);
+  }
+  [data-ct].is-open .ct-word {
+    opacity: 1;
+    transform: none;
+    /* Entrance timeline: shutter 120→1270ms, words from 620ms, then subtitle and credits */
+    transition:
+      opacity 700ms ease,
+      transform 900ms var(--ease-out-strong);
+    transition-delay: calc(620ms + var(--i) * 70ms);
+  }
+
+  .ct-credits {
+    opacity: 0;
+  }
+  [data-ct].is-open .ct-credits {
+    opacity: 1;
+    transition: opacity 500ms ease 1050ms;
+  }
+
+  .ct-subtitle {
+    text-shadow: 0 1px 12px rgb(21 14 10 / 0.6);
+    opacity: 0;
+  }
+  [data-ct].is-open .ct-subtitle {
+    opacity: 1;
+    transition: opacity 500ms ease 1200ms, filter 300ms ease;
+  }
+  [data-ct].is-open .ct-subtitle.is-ready {
+    transition: opacity 420ms ease, filter 420ms ease;
+  }
+  .ct-subtitle.is-swapping {
+    opacity: 0 !important;
+    filter: blur(4px);
+    transition: opacity 220ms ease, filter 220ms ease !important;
+  }
+
+  .ct-pick-fill {
+    transform: scaleX(0);
+    transition: transform 500ms var(--ease-out-strong);
+  }
+  .ct-pick[aria-pressed='true'] .ct-pick-fill {
+    transform: scaleX(1);
+  }
+  .ct-pick-label {
+    transition: color 200ms ease;
+    color: rgb(241 226 196 / 0.6);
+  }
+  .ct-pick:hover .ct-pick-label,
+  .ct-pick[aria-pressed='true'] .ct-pick-label {
+    color: var(--color-bougie);
+  }
+
+  .ct-link {
+    opacity: 0.78;
+    transition: opacity 200ms ease;
+  }
+  .ct-link:hover,
+  .ct-link:focus-visible {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ct-shutter {
+      display: none;
+    }
+    .ct-drift {
+      filter: brightness(0.86) saturate(0.95) contrast(1.06);
+    }
+    .ct-word,
+    .ct-credits,
+    .ct-subtitle {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-ct]');
+
+  if (root) {
+    const frame = root.querySelector<HTMLElement>('.ct-frame')!;
+    const drift = root.querySelector<HTMLElement>('.ct-drift')!;
+    const subtitle = root.querySelector<HTMLElement>('.ct-subtitle')!;
+    const scenes = [...root.querySelectorAll<HTMLImageElement>('.ct-scene')];
+    const picks = [...root.querySelectorAll<HTMLButtonElement>('.ct-pick')];
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // The shutter rises once, when the hero is first in view.
+    const observer = new IntersectionObserver(
+      (records) => {
+        if (records.some((r) => r.isIntersecting)) {
+          document.fonts.ready.then(() => requestAnimationFrame(() => root.classList.add('is-open')));
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.4 },
+    );
+    observer.observe(root);
+
+    // Handheld drift: the frame follows the cursor with damping, never 1:1. Mouse only.
+    if (!reduced && window.matchMedia('(pointer: fine)').matches) {
+      let tx = 0;
+      let ty = 0;
+      let x = 0;
+      let y = 0;
+      let raf = 0;
+
+      const tick = () => {
+        x += (tx - x) * 0.05;
+        y += (ty - y) * 0.05;
+        drift.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+        raf = Math.abs(tx - x) > 0.05 || Math.abs(ty - y) > 0.05 ? requestAnimationFrame(tick) : 0;
+      };
+      const kick = () => {
+        if (!raf) raf = requestAnimationFrame(tick);
+      };
+
+      frame.addEventListener('pointermove', (e) => {
+        const r = frame.getBoundingClientRect();
+        tx = ((e.clientX - r.left) / r.width - 0.5) * -22;
+        ty = ((e.clientY - r.top) / r.height - 0.5) * -14;
+        kick();
+      });
+      frame.addEventListener('pointerleave', () => {
+        tx = 0;
+        ty = 0;
+        kick();
+      });
+    }
+
+    // Scene picker: a slow crossfade with a little blur, like a lap dissolve.
+    picks.forEach((pick) => {
+      pick.addEventListener('click', () => {
+        if (pick.getAttribute('aria-pressed') === 'true') return;
+        picks.forEach((p) => p.setAttribute('aria-pressed', String(p === pick)));
+        scenes.forEach((s) => s.classList.toggle('is-active', s.dataset.scene === pick.dataset.target));
+
+        subtitle.classList.add('is-ready', 'is-swapping');
+        window.setTimeout(() => {
+          subtitle.textContent = pick.dataset.subtitle ?? '';
+          subtitle.classList.remove('is-swapping');
+        }, reduced ? 0 : 380);
+      });
+    });
+  }
+</script>

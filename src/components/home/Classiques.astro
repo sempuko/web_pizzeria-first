@@ -1,0 +1,243 @@
+---
+// 03 — Les classiques. The hero's scene picker at full scale: dish names in monumental type
+// cross into the photograph; a loupe shows the same photo four times closer.
+// Mobile: intro → photo (loupe on its corner) → names → details, via display: contents.
+import { photo } from '../../lib/photo';
+
+const dishes = [
+  {
+    id: 'margherita',
+    name: 'Margherita',
+    kind: 'Pizza',
+    note: 'Tomate, fior di latte, basilic, un filet d’huile d’olive.',
+    price: '10,50',
+    ...photo('margherita-gros'),
+    detail: 'La croûte',
+    position: '50% 50%',
+    focus: '22% 78%',
+  },
+  {
+    id: 'burrata',
+    name: 'Burrata',
+    kind: 'Pizza',
+    note: 'Tomate, burrata entière, roquette, huile d’olive.',
+    price: '14,90',
+    ...photo('burrata'),
+    detail: 'La burrata',
+    position: '50% 55%',
+    focus: '48% 40%',
+  },
+  {
+    id: 'carbonara',
+    name: 'Carbonara',
+    kind: 'Pasta',
+    note: 'Spaghetti, guanciale, jaune d’œuf, pecorino, poivre noir.',
+    price: '14,00',
+    ...photo('carbonara-nuit'),
+    detail: 'Le pecorino',
+    position: '60% 60%',
+    focus: '58% 52%',
+  },
+  {
+    id: 'lasagne',
+    name: 'Lasagne',
+    kind: 'Al forno',
+    note: 'Au four, gratinées, comme un dimanche midi.',
+    price: '14,50',
+    ...photo('lasagne'),
+    detail: 'Le gratin',
+    position: '50% 50%',
+    focus: '50% 45%',
+  },
+  {
+    id: 'tiramisu',
+    name: 'Tiramisu',
+    kind: 'Dolce',
+    note: 'Mascarpone, café, cacao. À partager, ou pas.',
+    price: '7,00',
+    ...photo('tiramisu'),
+    detail: 'Le cacao',
+    position: '50% 72%',
+    focus: '45% 80%',
+  },
+];
+---
+
+<section
+  id="classiques"
+  class="cl relative flex flex-col pt-[clamp(150px,22vh,220px)] pb-20 lg:block lg:h-[106vh] lg:min-h-[800px] lg:p-0 bg-nuit text-bougie font-archivo"
+  data-cl
+  data-nav-section="maison"
+>
+  <!-- The photograph -->
+  <div class="order-2 relative mx-5 aspect-[4/5] md:aspect-[4/3] overflow-hidden lg:mx-0 lg:aspect-auto lg:absolute lg:inset-y-0 lg:right-0 lg:w-[60vw]" data-flow>
+    {
+      dishes.map((d, i) => (
+        <img
+          src={d.src}
+          srcset={d.srcset}
+          sizes="(min-width: 1024px) 60vw, 100vw"
+          alt=""
+          data-dish={d.id}
+          class:list={['cl-img grade absolute inset-0 h-full w-full object-cover', { 'is-active': i === 0 }]}
+          style={`object-position:${d.position}`}
+          loading="lazy"
+        />
+      ))
+    }
+    <div class="cl-shade pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true"></div>
+  </div>
+
+  <!-- Names -->
+  <div class="contents lg:block lg:relative lg:z-10 lg:pl-[3.4vw] lg:pt-[25vh]">
+    <p
+      class="order-1 mx-5 mb-8 lg:mx-0 lg:mb-[4vh] max-w-[30ch] font-news italic text-[20px] lg:text-[22px] leading-snug text-bougie/80"
+      style="font-variation-settings: 'opsz' 20"
+    >
+      Ce que les habitués commandent sans ouvrir la carte.
+    </p>
+    <ol class="order-3 mx-5 mt-8 lg:mx-0 lg:mt-0 lg:w-max" aria-label="Les classiques de la maison">
+      {
+        dishes.map((d, i) => (
+          <li>
+            <button
+              type="button"
+              class="cl-pick relative block w-full lg:w-auto py-[0.5vh] text-left uppercase leading-[1] lg:leading-[0.98] text-[10.6vw] md:text-[8vw] lg:text-[4.3vw]"
+              style="font-variation-settings: 'wdth' 125; font-weight: 250"
+              data-target={d.id}
+              data-note={d.note}
+              data-price={d.price}
+              data-kind={d.kind}
+              data-src={d.src}
+              data-focus={d.focus}
+              data-detail={d.detail}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+            >
+              {d.name}
+              <span class="absolute inset-x-0 bottom-0 h-px bg-bougie/12" aria-hidden="true">
+                <span class="cl-fill absolute inset-0 origin-left bg-braise" />
+              </span>
+            </button>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+
+  <!-- Active dish -->
+  <div class="order-4 mx-5 mt-8 lg:mx-0 lg:mt-0 lg:absolute lg:z-10 lg:left-[3.4vw] lg:bottom-[9vh] lg:w-[25vw]" aria-live="polite">
+    <p class="flex gap-5 text-[13px] text-bougie/65">
+      <span data-cl-kind>{dishes[0].kind}</span>
+      <span class="tabular-nums" data-cl-price>{dishes[0].price} €</span>
+    </p>
+    <p class="cl-note mt-2 max-w-[30ch] font-news italic text-[20px] lg:text-[21px] leading-snug" style="font-variation-settings: 'opsz' 20" data-cl-note>
+      {dishes[0].note}
+    </p>
+  </div>
+
+  <!-- Loupe: same photograph, four times closer -->
+  <figure class="order-2 relative z-10 -mt-[22vw] mr-10 ml-auto w-[34vw] md:-mt-[14vw] md:w-[22vw] lg:m-0 lg:absolute lg:left-[33vw] lg:bottom-[9vh] lg:w-[12vw]" aria-hidden="true">
+    <div
+      class="cl-loupe grade aspect-square border border-bougie/50 bg-cover"
+      style={`background-image:url(${dishes[0].src}); background-size: 400%; background-position:${dishes[0].focus}`}
+    >
+    </div>
+    <figcaption class="cl-detail mt-2 font-news italic text-[14px] text-bougie/70" style="font-variation-settings: 'opsz' 12">
+      {dishes[0].detail}
+    </figcaption>
+  </figure>
+</section>
+
+<style>
+  .cl-img {
+    opacity: 0;
+    filter: blur(8px) brightness(0.86) saturate(0.92) contrast(1.06) sepia(0.06);
+    transform: scale(1.04);
+    transition:
+      opacity 900ms var(--ease-out-strong),
+      filter 900ms var(--ease-out-strong),
+      transform 2200ms var(--ease-out-strong);
+  }
+  .cl-img.is-active {
+    opacity: 1;
+    filter: blur(0) brightness(0.86) saturate(0.92) contrast(1.06) sepia(0.06);
+    transform: scale(1);
+  }
+  .cl-shade {
+    background: linear-gradient(to right, rgb(21 14 10 / 0.72), rgb(21 14 10 / 0) 38%);
+  }
+
+  .cl-pick {
+    color: rgb(241 226 196 / 0.3);
+    transition: color 220ms ease;
+  }
+  .cl-pick:hover,
+  .cl-pick:focus-visible {
+    color: rgb(241 226 196 / 0.7);
+  }
+  .cl-pick[aria-pressed='true'] {
+    color: var(--color-bougie);
+  }
+  .cl-fill {
+    transform: scaleX(0);
+    transition: transform 500ms var(--ease-out-strong);
+  }
+  .cl-pick[aria-pressed='true'] .cl-fill {
+    transform: scaleX(1);
+  }
+
+  .cl-loupe,
+  .cl-detail,
+  .cl-note {
+    transition:
+      opacity 260ms ease,
+      filter 260ms ease;
+  }
+  .is-swapping {
+    opacity: 0;
+    filter: blur(4px);
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-cl]');
+
+  if (root) {
+    const imgs = [...root.querySelectorAll<HTMLImageElement>('.cl-img')];
+    const picks = [...root.querySelectorAll<HTMLButtonElement>('.cl-pick')];
+    const loupe = root.querySelector<HTMLElement>('.cl-loupe')!;
+    const note = root.querySelector<HTMLElement>('[data-cl-note]')!;
+    const kind = root.querySelector<HTMLElement>('[data-cl-kind]')!;
+    const price = root.querySelector<HTMLElement>('[data-cl-price]')!;
+    const detail = root.querySelector<HTMLElement>('.cl-detail')!;
+    let timer = 0;
+
+    const show = (pick: HTMLButtonElement) => {
+      if (pick.getAttribute('aria-pressed') === 'true') return;
+      picks.forEach((p) => p.setAttribute('aria-pressed', String(p === pick)));
+      imgs.forEach((img) => img.classList.toggle('is-active', img.dataset.dish === pick.dataset.target));
+
+      kind.textContent = pick.dataset.kind ?? '';
+      price.textContent = `${pick.dataset.price} €`;
+      loupe.classList.add('is-swapping');
+      detail.classList.add('is-swapping');
+      note.classList.add('is-swapping');
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        note.textContent = pick.dataset.note ?? '';
+        detail.textContent = pick.dataset.detail ?? '';
+        loupe.style.backgroundImage = `url(${pick.dataset.src})`;
+        loupe.style.backgroundPosition = pick.dataset.focus ?? '50% 50%';
+        loupe.classList.remove('is-swapping');
+        detail.classList.remove('is-swapping');
+        note.classList.remove('is-swapping');
+      }, 260);
+    };
+
+    picks.forEach((pick) => {
+      pick.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && show(pick));
+      pick.addEventListener('focus', () => show(pick));
+      pick.addEventListener('click', () => show(pick));
+    });
+  }
+</script>

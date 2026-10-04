@@ -1,0 +1,68 @@
+---
+// 07 — Ce qu'on dit de la maison. No cards, no stars: the phrase customers actually use,
+// set as a film subtitle at monumental size, with a short column of notes in the margin.
+// PLACEHOLDER: notes paraphrase recurring review themes; replace with verbatim reviews.
+import Lines from '../Lines.astro';
+import { photo } from '../../lib/photo';
+
+const toast = photo('brindisi');
+
+const notes = ['L’accueil de Sophie.', 'Des portions généreuses.', 'On y revient depuis des années.', 'Le tiramisu, évidemment.'];
+---
+
+<section
+  id="avis"
+  class="relative overflow-hidden bg-nuit text-bougie font-archivo pt-[clamp(120px,22vh,220px)] pb-[clamp(80px,12vh,120px)] lg:p-0 lg:h-[100vh] lg:min-h-[760px]"
+  data-nav-section="maison"
+  data-flow
+>
+  <img
+    src={toast.src}
+    srcset={toast.srcset}
+    sizes="100vw"
+    alt=""
+    class="av-photo absolute inset-0 h-full w-full object-cover object-[28%_50%]"
+    loading="lazy"
+  />
+  <div class="av-shade absolute inset-0" aria-hidden="true"></div>
+
+  <div class="relative lg:absolute lg:inset-0">
+    <figure class="mx-5 m-0 lg:absolute lg:left-[3.4vw] lg:bottom-[12vh]">
+      <Lines
+        as="blockquote"
+        class="font-news italic text-[15.5vw] md:text-[13vw] lg:text-[9.6vw] leading-[0.92] tracking-[-0.03em]"
+        style="font-variation-settings: 'opsz' 72; font-weight: 300"
+        lines={['«&#8239;Comme', 'à la maison.&#8239;»']}
+      />
+      <figcaption class="mt-8 max-w-[44ch] text-[14px] leading-relaxed text-bougie/75">
+        La phrase qui revient le plus souvent quand nos clients parlent de La Stella d’Oro.
+      </figcaption>
+    </figure>
+
+    <!-- Marginal notes: one aligned column, not floating quotes -->
+    <ul
+      class="mx-5 mt-14 border-t border-bougie/20 lg:m-0 lg:absolute lg:left-[64vw] lg:right-[3.4vw] lg:bottom-[12vh]"
+      aria-label="Ce qu’on lit aussi"
+      data-reveal="lines"
+    >
+      {
+        notes.map((n, i) => (
+          <li class="border-b border-bougie/20 py-4 font-news italic text-[19px] lg:text-[20px] text-bougie/90" style="font-variation-settings: 'opsz' 20">
+            <span class="line" style={`--i:${i + 2}`}>
+              <span>«&#8239;{n}&#8239;»</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .av-photo {
+    filter: brightness(0.42) saturate(0.75) contrast(1.05) sepia(0.12);
+  }
+  .av-shade {
+    background: linear-gradient(to top, rgb(21 14 10 / 0.8), rgb(21 14 10 / 0) 60%);
+  }
+</style>

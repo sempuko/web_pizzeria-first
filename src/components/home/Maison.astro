@@ -1,0 +1,50 @@
+---
+// 02 — La maison. The first cut to daylight: paper, one serif statement, a narrow column.
+// The single photo hangs off the bottom edge into the next (dark) section.
+import Lines from '../Lines.astro';
+import { photo } from '../../lib/photo';
+
+const tomates = photo('pomodori');
+---
+
+<section
+  id="maison"
+  class="relative bg-papier text-nuit pt-[clamp(112px,20vh,200px)] pb-[clamp(190px,30vh,320px)] lg:pt-[clamp(140px,24vh,240px)] lg:pb-[clamp(240px,34vh,340px)]"
+  data-nav-section="maison"
+>
+  <Lines
+    as="h2"
+    class="mx-5 md:mx-[8vw] lg:ml-[8vw] lg:mr-[6vw] font-news text-[9.4vw] md:text-[7vw] lg:text-[5.4vw] leading-[1.06] lg:leading-[1.04] tracking-[-0.022em] text-balance"
+    style="font-variation-settings: 'opsz' 72; font-weight: 340"
+    lines={['Une cuisine italienne généreuse,', 'servie sans détour,', 'à deux pas de la République.']}
+  />
+
+  <div class="relative mt-12 mx-5 md:ml-[44vw] md:mr-[8vw] lg:mt-[13vh] lg:ml-[56vw] lg:mr-0 max-w-[31ch]">
+    <p class="font-news text-[18px] lg:text-[19px] leading-[1.58]" style="font-variation-settings: 'opsz' 16">
+      La Stella d’Oro est une petite salle du centre de Lyon. On y mange des pizzas, des pâtes et des desserts faits pour
+      être partagés. Rien de compliqué&#8239;: de bons produits italiens, des assiettes qui nourrissent, et un accueil dont
+      on se souvient.
+    </p>
+    <p class="mt-6 font-archivo text-[13px] text-nuit/70">Sur place ou à emporter, rue Jacques Stella.</p>
+  </div>
+
+  <!-- Hanging photograph: crosses into Les classiques -->
+  <figure class="absolute z-20 left-5 md:left-[8vw] bottom-[-13vh] lg:bottom-[-17vh] m-0 w-[46vw] md:w-[30vw] lg:w-[21vw]" data-parallax="-0.06">
+    <p
+      class="absolute left-[calc(100%+16px)] lg:left-[calc(100%+20px)] top-0 w-[17ch] lg:w-[22ch] font-news italic text-[15px] leading-snug text-nuit/70"
+      style="font-variation-settings: 'opsz' 12"
+    >
+      Tomates, mozzarella, basilic. Les produits d’abord, le reste suit.
+    </p>
+    <div class="aspect-[3/4] overflow-hidden" data-reveal="curtain" data-flow>
+      <img
+        src={tomates.src}
+        srcset={tomates.srcset}
+        sizes="(min-width: 1024px) 21vw, 46vw"
+        alt="Tomates fraîches en cagette"
+        class="grade h-full w-full object-cover"
+        loading="lazy"
+      />
+    </div>
+  </figure>
+</section>
