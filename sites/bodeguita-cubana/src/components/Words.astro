@@ -1,0 +1,23 @@
+---
+// Splits a heading into words at build time, so each word can rise out of its own line.
+// Screen readers still read one sentence: the spans carry no semantics.
+interface Props {
+  text: string;
+  /** Extra delay before the first word, in ms */
+  delay?: number;
+}
+
+const { text, delay = 0 } = Astro.props;
+const words = text.split(' ');
+---
+
+{
+  words.map((word, i) => (
+    <Fragment>
+      <span class="w">
+        <span style={`--i:${i};--d:${delay}ms`}>{word}</span>
+      </span>
+      {i < words.length - 1 ? ' ' : ''}
+    </Fragment>
+  ))
+}

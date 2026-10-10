@@ -1,0 +1,64 @@
+---
+// 04 — El mojito. The house recipe, as the restaurant publishes it, set like a recipe card
+// on a green Havana wall. The glass beside it is built line by line as the recipe is read.
+import Words from './Words.astro';
+import MojitoGlass from './MojitoGlass.astro';
+import { mojito } from '../content/site';
+---
+
+<section id="mojito" class="section stucco text-white" style="--wall: var(--color-hoja)">
+  <div class="wrap grid gap-14 lg:grid-cols-12 lg:gap-8">
+    <div class="lg:col-span-6">
+      <h2 class="h2 max-w-[12ch]" data-reveal="words"><Words text="Le mojito de la maison" /></h2>
+      <div class="mt-8 max-w-[50ch] space-y-5 text-[18px] leading-[1.65] text-white/90">
+        <p>
+          Le cocktail national de Cuba. Hemingway venait le boire à La Havane, au comptoir de la Bodeguita del Medio. Rue de Cuire, on
+          le prépare selon la recette de la maison.
+        </p>
+        <p>Il se boit très frais, au bar, avant de passer à table.</p>
+      </div>
+      <div class="mt-12" data-parallax="-0.05">
+        <MojitoGlass />
+      </div>
+    </div>
+
+    <div class="lg:col-span-5 lg:col-start-8 lg:self-end">
+      <h3 class="font-gloock text-[30px] leading-none">La recette</h3>
+      <dl class="recipe mt-6" data-recipe>
+        {
+          mojito.map((m) => (
+            <div class="grid grid-cols-[7.5rem_1fr] gap-4 border-t border-white/25 py-4 sm:grid-cols-[12rem_1fr] sm:gap-5">
+              <dt class="font-gloock text-[19px] leading-tight sm:text-[22px]">{m.qty}</dt>
+              <dd class="pt-[2px] text-[17px] leading-snug text-white/90">{m.what}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="border-t border-white/25 pt-5 font-hand text-[30px] leading-none text-sol">¡Salud!</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .recipe dt {
+    transition: color 300ms ease;
+  }
+  /* The line being poured right now */
+  .recipe > div:global(.is-current) dt {
+    color: var(--color-sol);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .recipe > div {
+      opacity: 0;
+      transform: translateX(-10px);
+      transition:
+        opacity 400ms ease-out,
+        transform 600ms var(--ease-out-strong);
+    }
+    /* Same scoped selector as the hidden state, plus the class: it must outweigh it */
+    :global(.js) .recipe > div:global(.is-on) {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

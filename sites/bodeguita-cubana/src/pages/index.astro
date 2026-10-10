@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Hero from '../components/Hero.astro';
+import Histoire from '../components/Histoire.astro';
+import Frieze from '../components/Frieze.astro';
+import Carte from '../components/Carte.astro';
+import Mojito from '../components/Mojito.astro';
+import Soir from '../components/Soir.astro';
+import Presse from '../components/Presse.astro';
+import Infos from '../components/Infos.astro';
+import Mur from '../components/Mur.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import MobileBar from '../components/MobileBar.astro';
+---
+
+<Base
+  title="La Bodeguita Cubana, restaurant cubain à la Croix-Rousse, Lyon"
+  description="Cuisine cubaine faite maison, mojitos et soirées salsa depuis 2003, au 44 rue de Cuire, Lyon 4e."
+>
+  <SiteHeader />
+  <main>
+    <!-- The façade stays pinned inside this wrapper only, while the story slides over it -->
+    <div class="curtain">
+      <Hero />
+      <Histoire />
+    </div>
+    <Frieze />
+    <Carte />
+    <Mojito />
+    <Soir />
+    <Presse />
+    <Infos />
+    <Mur />
+  </main>
+  <SiteFooter />
+  <MobileBar />
+</Base>
+
+<script>
+  import '../scripts/motion';
+</script>

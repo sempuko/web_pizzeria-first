@@ -1,0 +1,132 @@
+---
+// A frieze between the story and the menu: the names of the dishes run along the blue wall
+// between two strips of flowered azulejos, like the band under the restaurant's sign.
+// It drifts on its own; scrolling speeds it up, leans it into the motion and sets its direction.
+const words = [
+  'Mojito',
+  'Feijoada a la cubana',
+  'Cochinillo al horno',
+  'Ceviche de pescado',
+  'Salsa',
+  'Picadillo habanero',
+  'Ron cubano',
+  'Empanadas',
+];
+---
+
+<div class="frieze stucco relative z-[1] overflow-hidden text-white" aria-hidden="true" data-frieze>
+  <div class="frieze-band" data-frieze-band></div>
+  <div class="frieze-track" data-frieze-track>
+    {
+      [0, 1].map(() => (
+        <div class="frieze-set">
+          {words.map((w) => (
+            <Fragment>
+              <span class="frieze-word">{w}</span>
+              <svg class="frieze-flower" viewBox="-12 -12 24 24">
+                <g fill="#d2232f">
+                  <circle cx="0" cy="-5.4" r="4.4" />
+                  <circle cx="5.1" cy="-1.7" r="4.4" />
+                  <circle cx="3.2" cy="4.4" r="4.4" />
+                  <circle cx="-3.2" cy="4.4" r="4.4" />
+                  <circle cx="-5.1" cy="-1.7" r="4.4" />
+                </g>
+                <circle r="3" fill="#f2b92e" />
+              </svg>
+            </Fragment>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+  <div class="frieze-band" data-frieze-band></div>
+</div>
+
+<style>
+  .frieze-band {
+    height: 24px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 42' preserveAspectRatio='none'><rect width='100' height='42' fill='%23f6f5f0'/><rect width='100' height='4.5' fill='%231b2a55'/><rect y='37.5' width='100' height='4.5' fill='%231b2a55'/><rect x='99' width='1' height='42' fill='%23cdc6b6'/><g fill='%232f8f4e'><ellipse cx='50' cy='21' rx='7.5' ry='2.8'/><ellipse cx='4' cy='21' rx='5' ry='2.6'/><ellipse cx='96' cy='21' rx='5' ry='2.6'/></g><g fill='%23d2232f'><circle cx='29.5' cy='15.6' r='4.1'/><circle cx='34.6' cy='19.3' r='4.1'/><circle cx='32.7' cy='25.3' r='4.1'/><circle cx='26.3' cy='25.3' r='4.1'/><circle cx='24.4' cy='19.3' r='4.1'/><circle cx='70.5' cy='15.6' r='4.1'/><circle cx='75.6' cy='19.3' r='4.1'/><circle cx='73.7' cy='25.3' r='4.1'/><circle cx='67.3' cy='25.3' r='4.1'/><circle cx='65.4' cy='19.3' r='4.1'/></g><g fill='%23f2b92e'><circle cx='29.5' cy='21' r='2.7'/><circle cx='70.5' cy='21' r='2.7'/></g></svg>");
+    background-size: 57px 24px;
+    background-repeat: repeat-x;
+  }
+  .frieze-track {
+    display: flex;
+    width: max-content;
+    padding-block: clamp(18px, 3vw, 34px);
+    will-change: transform;
+  }
+  .frieze-set {
+    display: flex;
+    align-items: center;
+    gap: clamp(22px, 3vw, 44px);
+    padding-right: clamp(22px, 3vw, 44px);
+  }
+  .frieze-word {
+    font-family: var(--font-gloock);
+    font-size: clamp(36px, 5.4vw, 84px);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .frieze-flower {
+    flex: none;
+    width: clamp(22px, 2.6vw, 38px);
+    height: clamp(22px, 2.6vw, 38px);
+  }
+</style>
+
+<script>
+  const frieze = document.querySelector<HTMLElement>('[data-frieze]')!;
+  const track = frieze.querySelector<HTMLElement>('[data-frieze-track]')!;
+  const bands = [...frieze.querySelectorAll<HTMLElement>('[data-frieze-band]')];
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const BASE = 42; // px per second, idle drift
+  let x = 0;
+  let boost = 0; // extra speed from scrolling, decays
+  let lean = 0; // skew, follows boost
+  let direction = 1; // 1: moving left (reading down), -1: moving right (scrolling back up)
+  let visible = false;
+  let frame = 0;
+  let last = 0;
+  let lastY = window.scrollY;
+
+  const half = () => track.scrollWidth / 2;
+
+  const loop = (now: number) => {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    boost *= Math.pow(0.04, dt); // ~4% left after one second
+    lean += (Math.max(-9, Math.min(9, boost * direction * 0.012)) - lean) * Math.min(1, dt * 10);
+    x -= (BASE + boost) * direction * dt;
+    const w = half();
+    if (x <= -w) x += w;
+    if (x > 0) x -= w;
+    track.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0) skewX(${(-lean).toFixed(2)}deg)`;
+    // The tile strips run the other way, slower: two layers of the same wall
+    bands.forEach((b) => (b.style.backgroundPositionX = `${(-x * 0.35).toFixed(1)}px`));
+    frame = visible ? requestAnimationFrame(loop) : 0;
+  };
+
+  if (!reduce.matches) {
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !frame) {
+        last = performance.now();
+        frame = requestAnimationFrame(loop);
+      }
+    }).observe(frieze);
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        const y = window.scrollY;
+        const delta = y - lastY;
+        lastY = y;
+        if (!delta) return;
+        direction = delta > 0 ? 1 : -1;
+        boost = Math.min(900, boost + Math.abs(delta) * 6);
+      },
+      { passive: true },
+    );
+  }
+</script>

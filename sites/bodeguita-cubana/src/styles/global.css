@@ -1,0 +1,339 @@
+@import "tailwindcss";
+
+/* Every colour is taken from the restaurant itself:
+   the roughcast blue façade, the red of the logo triangle and of the dining-room walls,
+   the navy of the azulejo letters, the pine of the bar, the green and yellow of the tile flowers. */
+@theme {
+  --font-sans: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --font-gloock: "Gloock", Georgia, serif;
+  --font-hand: "Caveat", "Comic Sans MS", cursive;
+
+  --color-azul: #1f74a8;
+  --color-azul-hondo: #155985;
+  --color-rojo: #d2232f;
+  --color-rojo-hondo: #a8141f;
+  --color-marino: #1b2a55;
+  --color-noche: #121c3b;
+  --color-azulejo: #f6f5f0;
+  --color-pino: #ebcb98;
+  --color-hoja: #1f7a47;
+  --color-sol: #f2b92e;
+
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+html {
+  scroll-padding-top: 76px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--color-azulejo);
+  color: var(--color-marino);
+  font-family: var(--font-sans);
+  font-optical-sizing: auto;
+}
+
+p,
+li,
+figcaption {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-sol);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@layer components {
+  /* ------------------------------------------------------------------
+     Surfaces
+     ------------------------------------------------------------------ */
+
+  /* Crépi: the roughcast of the façade. Dark and light specks over a slow mottling,
+     so the blue reads as a wall and not as a flat fill. */
+  .stucco {
+    background-color: var(--wall, var(--color-azul));
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .03  0 0 0 0 .12  0 0 0 0 .24  0 0 0 1.7 -.62'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.5 -.68'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.005' numOctaves='3' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .02  0 0 0 0 .1  0 0 0 0 .2  0 0 0 1.1 -.42'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* Pin: the bar and the chairs. A long, stretched grain. */
+  .pine {
+    background-color: var(--color-pino);
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2000' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.004 .11' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55  0 0 0 0 .33  0 0 0 0 .12  0 0 0 .95 -.42'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* Glaze: the off-white sections are tile glaze, a hint of grain only. */
+  .glaze {
+    background-color: var(--color-azulejo);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .16  0 0 0 0 .33  0 0 0 .9 -.5'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* A photo printed as a snapshot and pinned on the pillar by the bar, like the real ones. */
+  .snapshot {
+    background: #fbfaf6;
+    padding: 8px 8px 30px;
+    box-shadow:
+      0 1px 0 rgba(27, 42, 85, 0.12),
+      0 14px 26px -16px rgba(18, 28, 59, 0.55);
+  }
+  .snapshot img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* A painting in a plain pine frame. */
+  .framed {
+    padding: 10px;
+    background: #c9914f;
+    box-shadow:
+      inset 0 0 0 2px rgba(0, 0, 0, 0.12),
+      0 18px 30px -20px rgba(18, 28, 59, 0.7);
+  }
+  .framed img {
+    display: block;
+    width: 100%;
+    height: auto;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  }
+
+  /* ------------------------------------------------------------------
+     Actions
+     ------------------------------------------------------------------ */
+
+  /* Buttons are painted, not floating: a hard shade that collapses when pressed. */
+  .btn {
+    --shade: var(--color-marino);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    min-height: 48px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.005em;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 var(--shade);
+    transition:
+      transform 140ms var(--ease-out-strong),
+      box-shadow 140ms var(--ease-out-strong),
+      background-color 180ms ease;
+  }
+  /* Pressed: the paint shade collapses and the button gives a little, like a real key */
+  .btn:active {
+    transform: translateY(2px) scale(0.97);
+    box-shadow: 0 1px 0 var(--shade);
+  }
+  .btn-rojo {
+    background: var(--color-rojo);
+    color: #fff;
+  }
+  @media (hover: hover) {
+    .btn-rojo:hover {
+      background: var(--color-rojo-hondo);
+    }
+  }
+  .btn-light {
+    background: transparent;
+    color: #fff;
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 255, 255, 0.85),
+      0 3px 0 var(--shade);
+  }
+  .btn-light:active {
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 255, 255, 0.85),
+      0 1px 0 var(--shade);
+  }
+  .btn-ink {
+    background: transparent;
+    color: var(--color-marino);
+    box-shadow:
+      inset 0 0 0 1.5px var(--color-marino),
+      0 3px 0 var(--shade);
+  }
+  .btn-ink:active {
+    box-shadow:
+      inset 0 0 0 1.5px var(--color-marino),
+      0 1px 0 var(--shade);
+  }
+
+  /* Text link: the underline is drawn from the left on hover. */
+  .u-link {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 1.5px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    padding-bottom: 2px;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .u-link {
+      transition: background-size 320ms var(--ease-out-strong);
+    }
+    .u-link:hover {
+      animation: u-redraw 420ms var(--ease-out-strong);
+    }
+  }
+
+  /* Live opening status: a dot and a sentence. */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.55;
+    flex: none;
+  }
+  [data-open="true"] .status-dot {
+    position: relative;
+    background: #3ddc84;
+    opacity: 1;
+  }
+  /* Open right now: a slow ring, the only idle motion on the page that carries information */
+  [data-open="true"] .status-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #3ddc84;
+    animation: status-ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  /* Section rhythm: one padding scale for the whole page. */
+  .section {
+    padding: clamp(84px, 12vh, 140px) 20px;
+  }
+  @media (min-width: 1024px) {
+    .section {
+      padding-inline: clamp(40px, 5vw, 88px);
+    }
+  }
+  .wrap {
+    max-width: 1240px;
+    margin-inline: auto;
+  }
+
+  .h2 {
+    font-family: var(--font-gloock);
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+}
+
+@keyframes u-redraw {
+  0% { background-size: 0 1.5px; }
+  100% { background-size: 100% 1.5px; }
+}
+
+@keyframes status-ping {
+  0% { transform: scale(1); opacity: 0.6; }
+  80%, 100% { transform: scale(3); opacity: 0; }
+}
+
+/* ------------------------------------------------------------------
+   Reveals. Each kind of thing arrives the way it would in the room:
+   headings rise out of their line, paintings are hung and settle on
+   their nail, snapshots are pinned, lists fill in one line after
+   another. Hidden states only exist when JS is there to undo them.
+   ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .js [data-reveal="words"] .w {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    /* Room for accents above and descenders below, taken back with negative margins */
+    padding: 0.1em 0.04em 0.16em;
+    margin: -0.1em -0.04em -0.16em;
+  }
+  .js [data-reveal="words"] .w > span {
+    display: inline-block;
+    transform: translateY(112%);
+    transition: transform 900ms var(--ease-out-strong);
+    transition-delay: calc(var(--d, 0ms) + var(--i) * 55ms);
+  }
+  .js [data-reveal="words"].is-in .w > span {
+    transform: none;
+  }
+
+  .js [data-reveal="hang"] {
+    opacity: 0;
+    transform: translateY(-26px) rotate(-3.5deg);
+    transform-origin: 50% 0;
+  }
+  .js [data-reveal="hang"].is-in {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 350ms ease-out,
+      transform 1100ms cubic-bezier(0.34, 1.32, 0.64, 1);
+    transition-delay: var(--delay, 0ms);
+  }
+
+  .js [data-reveal="pin"] {
+    opacity: 0;
+    transform: translateY(-16px) rotate(-8deg) scale(1.08);
+  }
+  .js [data-reveal="pin"].is-in {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 250ms ease-out,
+      transform 650ms cubic-bezier(0.34, 1.45, 0.64, 1);
+    transition-delay: var(--delay, 380ms);
+  }
+
+  .js [data-reveal="rows"] > * {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  .js [data-reveal="rows"].is-in > * {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 450ms ease-out,
+      transform 650ms var(--ease-out-strong);
+    transition-delay: calc(var(--delay, 0ms) + var(--i, 0) * 55ms);
+  }
+
+  /* A rule drawn from the left (menu heads) */
+  .js [data-reveal="draw"]::after {
+    transform: scaleX(0);
+  }
+  .js [data-reveal="draw"].is-in::after {
+    transform: scaleX(1);
+    transition: transform 900ms var(--ease-in-out-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-open="true"] .status-dot::after {
+    animation: none;
+  }
+}
+
+/* Lenis drives the scroll position itself: native smooth scrolling would fight it */
+html.lenis {
+  scroll-behavior: auto !important;
+}
+
+/* The story slides over the pinned façade like a sheet of paper */
+.curtain-sheet {
+  box-shadow: 0 -28px 60px -24px rgb(4 14 38 / 0.6);
+}

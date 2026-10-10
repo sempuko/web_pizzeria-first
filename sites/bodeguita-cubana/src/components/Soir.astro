@@ -1,0 +1,312 @@
+---
+// 05 — Le soir. Night indigo. What the evenings are, and the one thing the old site could not do:
+// take a private-party request without a phone call.
+// A string of patio lights hangs across the top; it switches on bulb by bulb as the section arrives.
+import Words from './Words.astro';
+import { contact, soirees } from '../content/site';
+
+// Two swags of lights. Each bulb sits on the wire's parabola (same curve as the SVG path below).
+const bulbs = [0, 1].flatMap((swag) =>
+  Array.from({ length: 7 }, (_, k) => {
+    const u = (k + 1) / 8;
+    return {
+      x: (swag + u) * 50,
+      y: 10 + 40 * (1 - (2 * u - 1) ** 2),
+      i: swag * 7 + k,
+      twinkle: (swag * 7 + k) % 3 === 0,
+    };
+  }),
+);
+---
+
+<section id="soirees" class="section relative bg-noche text-azulejo">
+  <div class="guirlande pointer-events-none absolute inset-x-0 top-0 h-[64px] lg:h-[96px]" aria-hidden="true" data-reveal="lights" data-lights>
+    <svg class="absolute inset-0 h-full w-full" viewBox="0 0 1000 100" preserveAspectRatio="none">
+      <path d="M0 10 Q250 90 500 10 Q750 90 1000 10" fill="none" stroke="rgb(246 245 240 / .35)" stroke-width="1.5" vector-effect="non-scaling-stroke"></path>
+    </svg>
+    {
+      bulbs.map((b) => (
+        <span class:list={['bulb', { twinkle: b.twinkle, 'max-sm:hidden': b.i % 2 === 1 }]} style={`left:${b.x}%;top:${b.y}%;--i:${b.i}`} />
+      ))
+    }
+  </div>
+  <!-- A warm light follows the pointer across the dark room -->
+  <div class="soir-light pointer-events-none absolute inset-0" aria-hidden="true" data-soir-light></div>
+  <div class="wrap relative z-[1]">
+    <h2 class="h2" data-reveal="words"><Words text="Le soir, on danse" /></h2>
+    <p class="mt-5 max-w-[48ch] text-[18px] leading-[1.6] text-azulejo/85">
+      De la musique cubaine tous les soirs, et des soirées pour aller plus loin.
+    </p>
+
+    <div class="mt-14 grid gap-14 lg:grid-cols-12 lg:gap-10">
+      <figure class="order-2 max-w-[250px] lg:order-none lg:col-span-3 lg:max-w-none" data-reveal="hang" data-parallax="0.06" style="--delay: 200ms">
+        <div class="framed -rotate-[1deg]" data-tilt="6">
+          <img
+            src="/img/tableau-soiree.jpg"
+            width="280"
+            height="647"
+            alt="Tableau : une danseuse, des congas et une guitare, en jaune et rouge."
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <figcaption class="mt-4 text-[14px] leading-relaxed text-azulejo/70">Un tableau de la galerie d’art cubain du restaurant.</figcaption>
+      </figure>
+
+      <div class="lg:col-span-4">
+        <h3 class="font-gloock text-[30px] leading-none">Les soirées</h3>
+        <ul class="mt-6" data-reveal="rows">
+          {
+            soirees.map((s) => (
+              <li class="border-t border-azulejo/20 py-4 text-[18px]">{s}</li>
+            ))
+          }
+        </ul>
+        <p class="border-t border-azulejo/20 pt-5 text-[16px] leading-relaxed text-azulejo/85">
+          Le programme des prochaines dates&#8239;: <a class="u-link whitespace-nowrap" href={contact.phoneHref}>{contact.phone}</a>
+        </p>
+      </div>
+
+      <div id="privatiser" class="lg:col-span-5">
+        <h3 class="font-gloock text-[30px] leading-none">Privatiser la Bodeguita</h3>
+        <p class="mt-5 max-w-[46ch] text-[17px] leading-[1.6] text-azulejo/85">
+          Anniversaire, dîner d’entreprise à thème, enterrement de vie de jeune fille&#8239;: on organise votre soirée au rythme de la
+          salsa, avec cocktails à l’apéritif si vous le souhaitez. Salle de réunion disponible, tarifs groupes et étudiants.
+        </p>
+
+        <!-- Mockup: the request is not sent anywhere yet. In production, route it to e-mail or WhatsApp. -->
+        <form class="devis mt-8 grid gap-x-6 gap-y-6 sm:grid-cols-2" novalidate data-devis>
+          <label class="field">
+            <span>Type d’événement</span>
+            <select name="type" required>
+              <option value="">Choisir</option>
+              <option>Anniversaire</option>
+              <option>Dîner d’entreprise</option>
+              <option>EVJF ou EVG</option>
+              <option>Autre</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Date souhaitée</span>
+            <input type="date" name="date" required />
+          </label>
+          <label class="field">
+            <span>Nombre de personnes</span>
+            <input type="number" name="personnes" min="1" inputmode="numeric" required />
+          </label>
+          <label class="field">
+            <span>Téléphone</span>
+            <input type="tel" name="tel" autocomplete="tel" required />
+          </label>
+          <p class="form-error text-[15px] text-sol sm:col-span-2" role="alert" data-error hidden></p>
+          <div class="sm:col-span-2">
+            <button class="btn btn-rojo" type="submit" style="--shade: #070d22" data-magnetic>Demander un devis</button>
+          </div>
+        </form>
+
+        <div class="devis-ok mt-8 border-t-2 border-sol pt-6" role="status" tabindex="-1" data-devis-ok hidden>
+          <p class="font-gloock text-[30px] leading-tight">Demande envoyée.</p>
+          <p class="mt-2 text-[17px] text-azulejo/85">On vous rappelle pour préparer votre devis.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .devis {
+    color-scheme: dark;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    color: rgb(246 245 240 / 0.78);
+  }
+  .field input,
+  .field select {
+    min-height: 46px;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1.5px solid rgb(246 245 240 / 0.45);
+    background: transparent;
+    color: #fff;
+    font-size: 17px;
+    border-radius: 0;
+    transition: border-color 180ms ease-out;
+  }
+  .field select option {
+    background: var(--color-noche);
+  }
+  .field input:focus,
+  .field select:focus {
+    outline: none;
+    border-bottom-color: var(--color-sol);
+  }
+  .field [aria-invalid="true"] {
+    border-bottom-color: var(--color-sol);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .devis-ok:not([hidden]) {
+      animation: ok-in 420ms var(--ease-out-strong);
+    }
+  }
+  .soir-light {
+    background: radial-gradient(circle 420px at var(--lx, 50%) var(--ly, 50%), rgb(255 190 110 / 0.24), rgb(255 160 90 / 0.07) 50%, rgb(255 160 90 / 0) 72%);
+    opacity: 0;
+    transition: opacity 500ms ease;
+  }
+  .soir-light.is-on {
+    opacity: 1;
+  }
+
+  /* Patio lights: dark bulbs on a wire, switched on one by one, a few breathing afterwards */
+  .bulb {
+    transform-origin: 50% -4px;
+    position: absolute;
+    width: 9px;
+    height: 13px;
+    margin-left: -4.5px;
+    border-radius: 45% 45% 50% 50%;
+    background: #39446c;
+  }
+  .bulb::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: -4px;
+    height: 5px;
+    border-radius: 1px;
+    background: #0b1230;
+  }
+  .guirlande:global(.is-in) .bulb {
+    background: #ffd27a;
+    box-shadow:
+      0 0 8px 2px rgb(255 196 100 / 0.65),
+      0 0 26px 8px rgb(255 170 70 / 0.18);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .guirlande:global(.is-in) .bulb {
+      animation: bulb-on 700ms linear both;
+      animation-delay: calc(150ms + var(--i) * 75ms);
+    }
+    .guirlande:global(.is-in) .bulb.twinkle {
+      animation:
+        bulb-on 700ms linear calc(150ms + var(--i) * 75ms) both,
+        twinkle 3.2s ease-in-out calc(2.4s + var(--i) * 0.37s) infinite alternate;
+    }
+    .guirlande.is-away .bulb {
+      animation-play-state: paused;
+    }
+  }
+  @keyframes bulb-on {
+    0% { opacity: 0.25; }
+    20% { opacity: 1; }
+    32% { opacity: 0.4; }
+    55%, 100% { opacity: 1; }
+  }
+  @keyframes twinkle {
+    from { opacity: 1; }
+    to { opacity: 0.55; }
+  }
+  @keyframes ok-in {
+    from { opacity: 0; transform: translateY(8px); }
+  }
+</style>
+
+<script>
+  import { spring } from '../scripts/spring';
+
+  const lights = document.querySelector<HTMLElement>('[data-lights]')!;
+  new IntersectionObserver(([entry]) => lights.classList.toggle('is-away', !entry.isIntersecting)).observe(lights);
+
+  const section = document.getElementById('soirees')!;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  // The spotlight follows the pointer on a soft spring.
+  const light = section.querySelector<HTMLElement>('[data-soir-light]')!;
+  const lx = spring((v) => light.style.setProperty('--lx', `${v.toFixed(1)}px`), { stiffness: 90, damping: 18 });
+  const ly = spring((v) => light.style.setProperty('--ly', `${v.toFixed(1)}px`), { stiffness: 90, damping: 18 });
+
+  // Bulbs brushed by the pointer swing on their wire, harder the faster it passes.
+  const bulbs = [...lights.querySelectorAll<HTMLElement>('.bulb')];
+  const swung = new WeakMap<HTMLElement, number>();
+  let lastX = 0;
+  let lastT = 0;
+
+  section.addEventListener('pointerenter', (e) => {
+    if (!fine.matches || reduce.matches) return;
+    const r = section.getBoundingClientRect();
+    lx.jump(e.clientX - r.left);
+    ly.jump(e.clientY - r.top);
+    light.classList.add('is-on');
+  });
+  section.addEventListener('pointerleave', () => light.classList.remove('is-on'));
+  section.addEventListener('pointermove', (e) => {
+    if (!fine.matches || reduce.matches) return;
+    const r = section.getBoundingClientRect();
+    lx.set(e.clientX - r.left);
+    ly.set(e.clientY - r.top);
+    light.classList.add('is-on');
+
+    const now = performance.now();
+    const vx = now - lastT < 80 ? (e.clientX - lastX) / (now - lastT) : 0;
+    lastX = e.clientX;
+    lastT = now;
+    const band = lights.getBoundingClientRect();
+    if (e.clientY > band.bottom + 30 || !vx) return;
+    for (const bulb of bulbs) {
+      const b = bulb.getBoundingClientRect();
+      if (Math.abs(b.left + b.width / 2 - e.clientX) > 26 || now - (swung.get(bulb) ?? 0) < 600) continue;
+      swung.set(bulb, now);
+      const a = Math.max(-38, Math.min(38, vx * 14));
+      bulb.animate(
+        [
+          { rotate: '0deg' },
+          { rotate: `${a}deg`, offset: 0.18 },
+          { rotate: `${-a * 0.55}deg`, offset: 0.42 },
+          { rotate: `${a * 0.28}deg`, offset: 0.66 },
+          { rotate: `${-a * 0.1}deg`, offset: 0.85 },
+          { rotate: '0deg' },
+        ],
+        { duration: 1600, easing: 'ease-in-out', composite: 'add' },
+      );
+    }
+  });
+
+  const form = document.querySelector<HTMLFormElement>('[data-devis]')!;
+  const ok = document.querySelector<HTMLElement>('[data-devis-ok]')!;
+  const error = form.querySelector<HTMLElement>('[data-error]')!;
+
+  const today = new Date();
+  const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  form.date.min = iso;
+
+  const check = (): [HTMLElement, string] | null => {
+    if (!form.type.value) return [form.type, 'Choisissez le type d’événement.'];
+    if (!form.date.value || form.date.value < iso) return [form.date, 'Choisissez une date à partir d’aujourd’hui.'];
+    if (!(Number(form.personnes.value) > 0)) return [form.personnes, 'Indiquez le nombre de personnes.'];
+    if (form.tel.value.replace(/\D/g, '').length < 10) return [form.tel, 'Indiquez un numéro pour qu’on vous rappelle.'];
+    return null;
+  };
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    form.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
+    const problem = check();
+    if (problem) {
+      const [field, message] = problem;
+      field.setAttribute('aria-invalid', 'true');
+      error.textContent = message;
+      error.hidden = false;
+      field.focus();
+      return;
+    }
+    form.hidden = true;
+    ok.hidden = false;
+    ok.focus();
+  });
+</script>

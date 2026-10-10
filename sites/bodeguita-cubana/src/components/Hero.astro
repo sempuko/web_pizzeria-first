@@ -1,0 +1,617 @@
+---
+// 01 — La façade.
+// The real front of the restaurant: a roughcast blue wall and a sign of hand-painted azulejos,
+// one white tile per letter between two bands of flowered tiles. On load the tiles are laid one
+// column at a time, like a tiler setting them, each landing with a small click.
+// After 18h30 in Lyon the wall falls into shade and the lantern flickers on. The lantern hangs
+// on a spring: a passing pointer (or a scroll, on a phone) sets it swinging.
+import Words from './Words.astro';
+import { contact } from '../content/site';
+
+const panels = ['LA', 'BODEGUITA', 'CUBANA'];
+
+// Deterministic "handmade" irregularity: each tile is a fraction of a degree off true.
+let column = 0;
+const signs = panels.map((word, p) => ({
+  word,
+  p,
+  tiles: [...word].map((letter) => {
+    const c = column++;
+    return {
+      letter,
+      c,
+      r: (((c * 37) % 11) - 5) * 0.13,
+      y: (((c * 53) % 5) - 2) * 0.35,
+    };
+  }),
+}));
+---
+
+<section id="facade" class="hero stucco lamp-off isolate overflow-hidden text-white" data-hero data-time="jour">
+  <div class="hero-sun pointer-events-none absolute inset-0" aria-hidden="true"></div>
+
+  <div class="hero-inner wrap relative flex min-h-svh flex-col justify-center px-5 pb-10 pt-[104px] lg:px-[clamp(40px,5vw,88px)] lg:pb-12 lg:pt-[128px]">
+    <h1 class="sign relative z-[1]" aria-label="La Bodeguita Cubana" data-tilt="2.2" data-tilt-area="[data-hero]">
+      {
+        signs.map((s) => (
+          <span class={`panel panel-${s.p}`} style={`--n:${s.tiles.length}`} aria-hidden="true">
+            {s.tiles.map((t) => (
+              <span class="tile band" style={`--c:${t.c};--r:${t.r}deg;--y:${t.y}px;--row:0`} />
+            ))}
+            {s.tiles.map((t) => (
+              <span class="tile letter" style={`--c:${t.c};--r:${t.r}deg;--y:${t.y}px;--row:1`}>
+                {t.letter}
+              </span>
+            ))}
+            {s.tiles.map((t) => (
+              <span class="tile band" style={`--c:${t.c};--r:${t.r}deg;--y:${t.y}px;--row:2`} />
+            ))}
+          </span>
+        ))
+      }
+    </h1>
+
+    <div class="hero-copy relative z-[3]">
+      <p class="tagline font-gloock" data-reveal="words">
+        <Words text="Cuba à la" delay={760} />{' '}
+        <span class="whitespace-nowrap"><Words text="Croix-Rousse," delay={925} /></span>{' '}
+        <Words text="depuis 2003." delay={980} />
+      </p>
+      <p class="lead">
+        Cuisine cubaine faite maison, mojitos à la hierbabuena et soirées salsa, dans une bodeguita familiale du plateau.
+      </p>
+
+      <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <a class="btn btn-rojo" href={contact.booking} target="_blank" rel="noopener" data-magnetic>Réserver une table</a>
+        <a class="btn btn-light" href="#carte" data-magnetic>Voir la carte</a>
+      </div>
+
+      <div class="hero-meta mt-8 flex flex-wrap items-center gap-x-8 gap-y-4 text-[15px]">
+        <p class="flex items-center gap-[10px]" data-status>
+          <span class="status-dot"></span>
+          <span data-status-text>{contact.street}, Lyon 4<sup>e</sup></span>
+        </p>
+        <p class="text-white/90 tabular-nums">
+          <span class="text-sol" aria-hidden="true">★</span>{' '}
+          <span data-count="4.6" data-decimals="1" data-delay="1100">4,6</span> sur Google, plus de{' '}
+          <span data-count="640" data-delay="1100">640</span> avis
+        </p>
+
+        <!-- Two layers: the buttons, and a white pill of the same labels in navy, clipped to the
+             active one. Moving the clip moves pill and colour together, with no colour lag. -->
+        <div class="daynight relative ml-auto flex rounded-full p-[3px] text-[14px]" role="group" aria-label="Voir la façade" data-daynight>
+          <button type="button" data-time-set="jour" aria-pressed="true">De jour</button>
+          <button type="button" data-time-set="nuit" aria-pressed="false">De nuit</button>
+          <span class="dn-top" aria-hidden="true"><span>De jour</span><span>De nuit</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evening: the street goes dark, the lantern takes over -->
+  <div class="hero-night pointer-events-none absolute inset-0 z-[2]" aria-hidden="true"></div>
+  <div class="hero-glow pointer-events-none absolute inset-0 z-[2]" aria-hidden="true"></div>
+  <!-- At night the pointer carries a second, warmer light along the wall -->
+  <div class="hero-torch pointer-events-none absolute inset-0 z-[2]" aria-hidden="true"></div>
+  <!-- Shade cast by the story sliding over the façade -->
+  <div class="hero-cover pointer-events-none absolute inset-0 z-[5]" aria-hidden="true"></div>
+
+  <svg class="lantern absolute z-[3] overflow-visible" viewBox="0 0 80 160" aria-hidden="true">
+    <rect x="0" y="18" width="6" height="40" rx="2" fill="#0f1730"></rect>
+    <path d="M6 28 H41" stroke="#0f1730" stroke-width="4" stroke-linecap="round"></path>
+    <path d="M6 50 C20 50 30 42 36 29" stroke="#0f1730" stroke-width="2.5" fill="none" stroke-linecap="round"></path>
+    <g class="lantern-swing">
+      <path d="M40 28 V40" stroke="#0f1730" stroke-width="2.5"></path>
+      <path d="M27 46 H53 L48 38 H32 Z" fill="#0f1730"></path>
+      <path class="lantern-glass" d="M29 48 H51 L48 96 H32 Z"></path>
+      <path class="lantern-lit" d="M29 48 H51 L48 96 H32 Z"></path>
+      <path d="M27 46 H53 L49 98 H31 Z M29 48 L32 96 H48 L51 48 Z" fill="#0f1730" fill-rule="evenodd"></path>
+      <path d="M40 48 V96" stroke="#0f1730" stroke-width="2"></path>
+      <path d="M29 98 H51 L45 106 H35 Z" fill="#0f1730"></path>
+      <circle cx="40" cy="110" r="3" fill="#0f1730"></circle>
+    </g>
+  </svg>
+</section>
+
+<style>
+  /* ---------- Wall and light ---------- */
+
+  .hero {
+    --wall: var(--color-azul);
+    position: relative;
+  }
+  /* The curtain: once its bottom reaches the screen's bottom, the façade stays put
+     and the story slides over it. --stick is set in JS (0, or negative for a tall hero). */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero {
+      position: sticky;
+      top: var(--stick, 0px);
+    }
+  }
+  .hero-cover {
+    background: #070d22;
+    opacity: 0;
+  }
+  .hero-inner {
+    transform-origin: 50% 30%;
+  }
+  .hero-sun {
+    background:
+      linear-gradient(118deg, rgb(255 255 255 / 0.16) 0%, rgb(255 255 255 / 0) 42%),
+      linear-gradient(180deg, rgb(8 22 48 / 0) 60%, rgb(8 22 48 / 0.28) 100%);
+  }
+
+  .hero-night,
+  .hero-glow {
+    opacity: 0;
+  }
+  .hero-night {
+    background: radial-gradient(ellipse 100% 90% at 78% 14%, rgb(6 14 38 / 0.1), rgb(6 14 38 / 0.7) 80%);
+    mix-blend-mode: multiply;
+    transition: opacity 800ms var(--ease-in-out-strong);
+  }
+  .hero-glow {
+    background: radial-gradient(circle 64vmax at var(--lamp-x, 86%) var(--lamp-y, 20%), rgb(255 184 92 / 0.46), rgb(255 160 70 / 0.16) 42%, rgb(255 160 70 / 0) 72%);
+    mix-blend-mode: screen;
+    transition: opacity 500ms ease;
+  }
+  [data-time="nuit"] .hero-night {
+    opacity: 1;
+  }
+  [data-time="nuit"]:not(.lamp-off) .hero-glow {
+    opacity: 1;
+  }
+  .hero-torch {
+    background: radial-gradient(circle 260px at var(--tx, 50%) var(--ty, 50%), rgb(255 200 125 / 0.42), rgb(255 170 90 / 0.14) 45%, rgb(255 170 90 / 0) 72%);
+    mix-blend-mode: screen;
+    opacity: 0;
+    transition: opacity 450ms ease;
+  }
+  [data-time="nuit"].torch-on .hero-torch {
+    opacity: 1;
+  }
+
+  /* ---------- Lantern ---------- */
+
+  .lantern {
+    --lamp-size: 64px;
+    width: var(--lamp-size);
+    height: calc(var(--lamp-size) * 2);
+    top: 72px;
+    right: 16px;
+  }
+  /* Pivot on the hook: the swing is driven by a spring in JS */
+  .lantern-swing {
+    transform-box: view-box;
+    transform-origin: 40px 28px;
+  }
+  .lantern-glass {
+    fill: #b9d3e2;
+  }
+  .lantern-lit {
+    fill: #ffd27a;
+    filter: drop-shadow(0 0 6px rgb(255 196 100 / 0.9));
+    opacity: 0;
+    transition: opacity 400ms ease;
+  }
+  [data-time="nuit"]:not(.lamp-off) .lantern-lit {
+    opacity: 1;
+  }
+  /* Ignition: an old bulb that catches, falters, then holds */
+  .is-igniting .lantern-lit,
+  .is-igniting .hero-glow {
+    animation: ignite 950ms linear both;
+  }
+  @keyframes ignite {
+    0% { opacity: 0; }
+    7% { opacity: 0.9; }
+    13% { opacity: 0.08; }
+    24% { opacity: 0.95; }
+    31% { opacity: 0.3; }
+    45% { opacity: 1; }
+    56% { opacity: 0.72; }
+    68%, 100% { opacity: 1; }
+  }
+  @media (min-width: 1024px) {
+    .lantern {
+      --lamp-size: 96px;
+      top: 104px;
+      right: clamp(40px, 7vw, 120px);
+    }
+  }
+
+  /* ---------- The azulejo sign ---------- */
+
+  .sign {
+    /* Mobile: three panels stacked, each one as wide as the screen allows for BODEGUITA */
+    --t: min(calc((100vw - 40px - 20px) / 9), 46px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(var(--t) * 0.28);
+    margin: 0;
+    font-weight: 400;
+    will-change: transform;
+  }
+  .panel {
+    display: inline-grid;
+    grid-template-columns: repeat(var(--n), var(--t));
+    grid-template-rows: calc(var(--t) * 0.42) calc(var(--t) * 1.14) calc(var(--t) * 0.42);
+    gap: 2px;
+    padding: 2px;
+    /* Grout and shadow belong to the tiles, so an unfinished sign shows bare wall, not a blank slab */
+    filter: drop-shadow(0 2px 0 rgb(6 24 52 / 0.35)) drop-shadow(0 12px 10px rgb(4 18 42 / 0.38));
+  }
+  .panel-0 { transform: rotate(-0.8deg) translateY(2px); }
+  .panel-1 { transform: rotate(0.35deg); }
+  .panel-2 { transform: rotate(-0.5deg); align-self: flex-end; }
+
+  @media (min-width: 640px) {
+    /* LA and BODEGUITA side by side, CUBANA hung below the end of the line, as on the wall */
+    .sign {
+      --t: min(calc((100vw - 80px - 64px) / 11.6), 92px);
+      display: grid;
+      grid-template-columns: auto auto;
+      justify-content: start;
+      column-gap: calc(var(--t) * 0.5);
+      row-gap: calc(var(--t) * 0.34);
+    }
+    .panel-2 {
+      grid-column: 2;
+      justify-self: end;
+    }
+  }
+  @media (min-width: 1024px) {
+    .sign {
+      --t: clamp(52px, 5.5vw, 86px);
+    }
+  }
+
+  .tile {
+    position: relative;
+    grid-row: calc(var(--row) + 1);
+    border-radius: 1.5px;
+    outline: 2px solid #cdc6b6;
+    transform: rotate(var(--r)) translateY(var(--y));
+    overflow: hidden;
+  }
+  /* Glaze shine: every few seconds a streak of light runs across the letters, column by column */
+  .letter::before {
+    content: "";
+    position: absolute;
+    inset: -20% -70%;
+    z-index: 1;
+    background: linear-gradient(105deg, rgb(255 255 255 / 0) 42%, rgb(255 255 255 / 0.7) 50%, rgb(255 255 255 / 0) 58%);
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .hero.is-laid .letter::before {
+      animation: glaze-shine 6.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      animation-delay: calc(1.6s + var(--c) * 55ms);
+    }
+  }
+  @keyframes glaze-shine {
+    0% { transform: translateX(-100%); }
+    16%, 100% { transform: translateX(100%); }
+  }
+  /* Glaze: a soft highlight top-left on every tile */
+  .tile::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 90% at 18% 8%, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0) 52%);
+    pointer-events: none;
+  }
+  .letter {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(160deg, #fbfaf6, #e9e6dc);
+    box-shadow:
+      inset 0 0 0 1px rgb(27 42 85 / 0.05),
+      inset -1px -2px 4px rgb(27 42 85 / 0.12);
+    color: var(--color-marino);
+    font-family: var(--font-gloock);
+    font-size: calc(var(--t) * 0.86);
+    line-height: 1;
+    padding-top: calc(var(--t) * 0.08);
+  }
+  .band {
+    background-color: #f6f5f0;
+    background-size: 100% 100%;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 42' preserveAspectRatio='none'><rect width='100' height='42' fill='%23f6f5f0'/><rect width='100' height='4.5' fill='%231b2a55'/><rect y='37.5' width='100' height='4.5' fill='%231b2a55'/><g fill='%232f8f4e'><ellipse cx='50' cy='21' rx='7.5' ry='2.8'/><ellipse cx='4' cy='21' rx='5' ry='2.6'/><ellipse cx='96' cy='21' rx='5' ry='2.6'/></g><g fill='%23d2232f'><circle cx='29.5' cy='15.6' r='4.1'/><circle cx='34.6' cy='19.3' r='4.1'/><circle cx='32.7' cy='25.3' r='4.1'/><circle cx='26.3' cy='25.3' r='4.1'/><circle cx='24.4' cy='19.3' r='4.1'/><circle cx='70.5' cy='15.6' r='4.1'/><circle cx='75.6' cy='19.3' r='4.1'/><circle cx='73.7' cy='25.3' r='4.1'/><circle cx='67.3' cy='25.3' r='4.1'/><circle cx='65.4' cy='19.3' r='4.1'/></g><g fill='%23f2b92e'><circle cx='29.5' cy='21' r='2.7'/><circle cx='70.5' cy='21' r='2.7'/></g><g fill='%231f74a8'><circle cx='50' cy='10.5' r='1.7'/><circle cx='50' cy='31.5' r='1.7'/><circle cx='9' cy='10.5' r='1.4'/><circle cx='91' cy='31.5' r='1.4'/></g></svg>");
+    box-shadow: inset -1px -2px 3px rgb(27 42 85 / 0.12);
+  }
+
+  /* ---------- Copy ---------- */
+
+  .hero-copy {
+    margin-top: clamp(36px, 6.5vh, 72px);
+  }
+  .tagline {
+    font-size: clamp(30px, 3.4vw, 48px);
+    line-height: 1.08;
+    max-width: 22ch;
+    text-wrap: balance;
+  }
+  .lead {
+    margin-top: 14px;
+    max-width: 46ch;
+    font-size: clamp(17px, 1.35vw, 20px);
+    line-height: 1.55;
+    color: rgb(255 255 255 / 0.92);
+  }
+
+  /* ---------- Day / night switch ---------- */
+
+  .daynight {
+    box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.55);
+  }
+  .daynight button,
+  .dn-top > span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+  }
+  .daynight button {
+    color: rgb(255 255 255 / 0.85);
+    transition: transform 140ms var(--ease-out-strong);
+  }
+  .daynight button:active {
+    transform: scale(0.96);
+  }
+  .dn-top {
+    position: absolute;
+    inset: 3px;
+    display: flex;
+    pointer-events: none;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--color-marino);
+    clip-path: inset(0 50% 0 0 round 999px);
+  }
+  .dn-top.is-ready {
+    transition: clip-path 380ms var(--ease-in-out-strong);
+  }
+
+  /* ---------- Entrance: the tiler at work ---------- */
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .hero:not(.is-laid) .tile {
+      opacity: 0;
+      transform: rotate(calc(var(--r) * 5)) translateY(calc(var(--t) * -0.22)) scale(1.08);
+    }
+    :global(.js) .hero .tile {
+      /* A slight overshoot on landing: the click of a tile set into fresh mortar */
+      transition:
+        opacity 220ms ease-out,
+        transform 560ms cubic-bezier(0.34, 1.42, 0.64, 1);
+      transition-delay: calc(120ms + var(--c) * 46ms + var(--row) * 24ms);
+    }
+    :global(.js) .hero:not(.is-laid) .hero-copy > :not(.tagline),
+    :global(.js) .hero:not(.is-laid) .lantern {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    :global(.js) .hero .hero-copy > :not(.tagline),
+    :global(.js) .hero .lantern {
+      transition:
+        opacity 500ms ease-out,
+        transform 700ms var(--ease-out-strong);
+    }
+    :global(.js) .hero .hero-copy > :nth-child(2) { transition-delay: 980ms; }
+    :global(.js) .hero .hero-copy > :nth-child(3) { transition-delay: 1060ms; }
+    :global(.js) .hero .hero-copy > :nth-child(4) { transition-delay: 1140ms; }
+    :global(.js) .hero .lantern { transition-delay: 1000ms; }
+  }
+</style>
+
+<script>
+  import { isEvening, status } from '../lib/hours';
+  import { spring } from '../scripts/spring';
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]')!;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // 1. The lantern hangs on a spring: low damping, so it swings a few times before settling.
+  const swing = hero.querySelector<SVGGElement>('.lantern-swing')!;
+  const sway = spring(
+    (deg) => {
+      swing.style.transform = `rotate(${Math.max(-18, Math.min(18, deg)).toFixed(2)}deg)`;
+    },
+    { stiffness: 36, damping: 2.4 },
+  );
+  // One gust at a time: pushes closer than 120ms apart are ignored, so a fast sweep
+  // gives a lively swing instead of slamming the lantern against its limit.
+  let lastPush = 0;
+  const push = (velocity: number) => {
+    const now = performance.now();
+    if (reduce.matches || now - lastPush < 120) return;
+    lastPush = now;
+    sway.kick(Math.max(-40, Math.min(40, velocity)));
+  };
+
+  // A pointer passing close by drags air with it: push opposite to the bottom's swing direction.
+  const lantern = hero.querySelector<SVGSVGElement>('.lantern')!;
+  let lastX = 0;
+  let lastT = 0;
+  hero.addEventListener('pointermove', (e) => {
+    const now = performance.now();
+    const dt = now - lastT;
+    const vx = dt > 0 && dt < 80 ? (e.clientX - lastX) / dt : 0;
+    lastX = e.clientX;
+    lastT = now;
+    const l = lantern.getBoundingClientRect();
+    const near = Math.hypot(e.clientX - (l.left + l.width / 2), e.clientY - (l.top + l.height / 2)) < 240;
+    if (near && vx) push(-vx * 20);
+  });
+
+  // On a phone there is no pointer: the scroll itself is the gust.
+  let lastY = window.scrollY;
+  window.addEventListener(
+    'scroll',
+    () => {
+      const y = window.scrollY;
+      if (y < hero.offsetHeight) push((y - lastY) * 0.6);
+      lastY = y;
+    },
+    { passive: true },
+  );
+
+  // 2. Time of day. The wall follows Lyon's clock until someone picks a side.
+  const switcher = hero.querySelector<HTMLElement>('[data-daynight]')!;
+  const pill = switcher.querySelector<HTMLElement>('.dn-top')!;
+  const buttons = [...switcher.querySelectorAll<HTMLButtonElement>('[data-time-set]')];
+
+  const placePill = () => {
+    const active = buttons.find((b) => b.getAttribute('aria-pressed') === 'true')!;
+    const inner = switcher.clientWidth - 6;
+    const left = active.offsetLeft - 3;
+    const right = inner - left - active.offsetWidth;
+    pill.style.clipPath = `inset(0 ${right}px 0 ${left}px round 999px)`;
+  };
+
+  const ignite = () => {
+    hero.classList.remove('lamp-off');
+    if (reduce.matches) return;
+    hero.classList.remove('is-igniting');
+    void hero.offsetWidth;
+    hero.classList.add('is-igniting');
+    window.setTimeout(() => hero.classList.remove('is-igniting'), 1000);
+    push(30);
+  };
+
+  const setTime = (time: string, animate: boolean) => {
+    const changed = hero.dataset.time !== time;
+    hero.dataset.time = time;
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.timeSet === time)));
+    placePill();
+    if (animate && changed && time === 'nuit') ignite();
+  };
+
+  const evening = isEvening();
+  setTime(evening ? 'nuit' : 'jour', false);
+  if (!evening) hero.classList.remove('lamp-off');
+  requestAnimationFrame(() => pill.classList.add('is-ready'));
+  buttons.forEach((b) => b.addEventListener('click', () => setTime(b.dataset.timeSet!, true)));
+  window.addEventListener('resize', placePill);
+
+  // Keep the glow centred on the lantern, whatever the layout.
+  const placeGlow = () => {
+    const h = hero.getBoundingClientRect();
+    const l = lantern.getBoundingClientRect();
+    hero.style.setProperty('--lamp-x', `${((l.left + l.width / 2 - h.left) / h.width) * 100}%`);
+    hero.style.setProperty('--lamp-y', `${((l.top + l.height * 0.45 - h.top) / h.height) * 100}%`);
+  };
+  placeGlow();
+  window.addEventListener('resize', placeGlow);
+
+  // 3. Live opening status, everywhere it appears on the page.
+  const paint = () => {
+    const s = status();
+    document.querySelectorAll<HTMLElement>('[data-status]').forEach((el) => {
+      el.dataset.open = String(s.open);
+      const text = el.querySelector('[data-status-text]');
+      if (text) text.textContent = s.text;
+    });
+  };
+  paint();
+  window.setInterval(paint, 60_000);
+
+  // 4. The curtain. The façade pins once its bottom meets the screen's bottom; as the story
+  // slides over it, it recedes: a little smaller, a little higher, in growing shade.
+  const inner = hero.querySelector<HTMLElement>('.hero-inner')!;
+  const cover = hero.querySelector<HTMLElement>('.hero-cover')!;
+  let pinAt = 0;
+  const measure = () => {
+    const stick = Math.min(0, window.innerHeight - hero.offsetHeight);
+    hero.style.setProperty('--stick', `${stick}px`);
+    pinAt = hero.offsetTop + hero.offsetHeight - window.innerHeight;
+  };
+  let queued = false;
+  const recede = () => {
+    queued = false;
+    if (reduce.matches) return;
+    const p = Math.min(1, Math.max(0, (window.scrollY - pinAt) / window.innerHeight));
+    inner.style.scale = p ? String(1 - p * 0.07) : '';
+    inner.style.translate = p ? `0 ${(-p * 6).toFixed(2)}vh` : '';
+    cover.style.opacity = (p * 0.62).toFixed(3);
+  };
+  measure();
+  recede();
+  window.addEventListener('resize', () => (measure(), recede()));
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(recede);
+      }
+    },
+    { passive: true },
+  );
+
+  // 5. A wave through the tiles: the one under the pointer (or finger) lifts, its neighbours
+  // follow with a delay and a smaller lift. Uses `translate`/`scale`, apart from the tiles' `transform`.
+  const columns = new Map<number, HTMLElement[]>();
+  hero.querySelectorAll<HTMLElement>('.tile').forEach((tile) => {
+    const c = Number(tile.style.getPropertyValue('--c'));
+    columns.set(c, [...(columns.get(c) ?? []), tile]);
+  });
+  const lastWave = new Map<number, number>();
+  const wave = (origin: number) => {
+    if (reduce.matches || !hero.classList.contains('is-laid')) return;
+    const now = performance.now();
+    if (now - (lastWave.get(origin) ?? -1e4) < 450) return;
+    lastWave.set(origin, now);
+    columns.forEach((tiles, c) => {
+      const d = Math.abs(c - origin);
+      const amp = 1 - d / 5;
+      if (amp <= 0) return;
+      tiles.forEach((tile) =>
+        tile.animate(
+          [
+            { translate: '0 0', scale: '1' },
+            { translate: `0 ${(-14 * amp).toFixed(1)}px`, scale: `${(1 + 0.07 * amp).toFixed(3)}`, offset: 0.32 },
+            { translate: '0 0', scale: '1' },
+          ],
+          { duration: 760, delay: d * 55, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+        ),
+      );
+    });
+  };
+  columns.forEach((tiles, c) => tiles.forEach((tile) => tile.addEventListener('pointerenter', () => wave(c))));
+
+  // 6. The torch: at night the pointer lights the wall, following on a spring.
+  const torch = hero.querySelector<HTMLElement>('.hero-torch')!;
+  const tx = spring((v) => torch.style.setProperty('--tx', `${v.toFixed(1)}px`), { stiffness: 120, damping: 20 });
+  const ty = spring((v) => torch.style.setProperty('--ty', `${v.toFixed(1)}px`), { stiffness: 120, damping: 20 });
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  hero.addEventListener('pointerenter', (e) => {
+    if (!fine.matches || reduce.matches) return;
+    const r = hero.getBoundingClientRect();
+    tx.jump(e.clientX - r.left);
+    ty.jump(e.clientY - r.top);
+    hero.classList.add('torch-on');
+  });
+  hero.addEventListener('pointermove', (e) => {
+    if (!fine.matches || reduce.matches) return;
+    const r = hero.getBoundingClientRect();
+    tx.set(e.clientX - r.left);
+    ty.set(e.clientY - r.top);
+    hero.classList.add('torch-on');
+  });
+  hero.addEventListener('pointerleave', () => hero.classList.remove('torch-on'));
+
+  // 7. Lay the tiles once the sign's typeface is ready, so no letter swaps mid-animation.
+  // The lantern arrives last with a little swing, as if just hung; at night it then lights up.
+  const lay = () =>
+    requestAnimationFrame(() => {
+      hero.classList.add('is-laid');
+      window.setTimeout(() => push(55), 1000);
+      if (evening) window.setTimeout(ignite, 1250);
+    });
+  Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 900))]).then(lay);
+</script>

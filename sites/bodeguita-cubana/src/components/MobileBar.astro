@@ -1,0 +1,32 @@
+---
+// Phone only: book, call or get directions are always one thumb away, once the hero's own buttons are gone.
+import { contact } from '../content/site';
+---
+
+<nav class="mobile-bar fixed inset-x-0 bottom-0 z-40 bg-noche px-3 pt-3 lg:hidden" aria-label="Accès rapide" data-mobile-bar>
+  <div class="grid grid-cols-[1.3fr_1fr_1fr] gap-2">
+    <a class="btn btn-rojo min-h-[46px] px-3 text-[15px]" style="--shade: #070d22" href={contact.booking} target="_blank" rel="noopener">Réserver</a>
+    <a class="btn min-h-[46px] px-3 text-[15px] text-white" style="--shade: transparent; box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .5)" href={contact.phoneHref}>Appeler</a>
+    <a class="btn min-h-[46px] px-3 text-[15px] text-white" style="--shade: transparent; box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .5)" href={contact.directions} target="_blank" rel="noopener">Itinéraire</a>
+  </div>
+</nav>
+
+<style>
+  .mobile-bar {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    transform: translateY(110%);
+    transition: transform 320ms var(--ease-out-strong);
+  }
+  .mobile-bar.is-shown {
+    transform: none;
+  }
+</style>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-mobile-bar]')!;
+  const hero = document.getElementById('facade')!;
+  // The façade stays pinned behind the story, so "hero out of view" is measured by scroll, not by intersection.
+  const update = () => bar.classList.toggle('is-shown', window.scrollY > hero.offsetHeight * 0.7);
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+</script>

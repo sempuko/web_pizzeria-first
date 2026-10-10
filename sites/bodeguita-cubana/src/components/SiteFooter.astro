@@ -1,0 +1,26 @@
+---
+import Logo from './Logo.astro';
+import { contact } from '../content/site';
+---
+
+<footer class="bg-noche px-5 pb-28 pt-16 text-azulejo lg:px-[clamp(40px,5vw,88px)] lg:pb-14">
+  <div class="wrap grid gap-10 text-[15px] leading-relaxed md:grid-cols-2 lg:grid-cols-12">
+    <div class="lg:col-span-4">
+      <Logo />
+      <p class="mt-5 max-w-[30ch] text-azulejo/75">Restaurant cubain à la Croix-Rousse, depuis 2003.</p>
+    </div>
+    <div class="lg:col-span-3">
+      <p>{contact.street}<br />{contact.city}</p>
+      <a class="u-link mt-2 inline-block" href={contact.phoneHref}>{contact.phone}</a>
+    </div>
+    <div class="lg:col-span-3">
+      <p>Mardi au vendredi, midi et soir</p>
+      <p>Samedi soir</p>
+      <p class="text-azulejo/70">Fermé dimanche et lundi</p>
+    </div>
+    <div class="text-azulejo/70 lg:col-span-2 lg:text-right">
+      <a class="u-link" href="#">Mentions légales</a>
+      <p class="mt-2 text-[13px]">Maquette de présentation, octobre 2026</p>
+    </div>
+  </div>
+</footer>

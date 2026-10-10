@@ -1,0 +1,220 @@
+---
+// 08 — Signez le mur. The page ends on the blue wall it opened with. The Bodeguita del Medio in
+// Havana is famous for walls covered in its guests' writing; here a visitor can leave a word too.
+// Mockup: messages are kept in this browser only (localStorage). A shared, moderated wall comes later.
+import Words from './Words.astro';
+import { scribbles } from '../content/site';
+---
+
+<section id="mur" class="section stucco relative overflow-hidden text-white">
+  <div class="wrap grid gap-14 lg:grid-cols-12 lg:gap-10">
+    <figure class="order-2 mx-auto w-full max-w-[300px] lg:order-none lg:col-span-4 lg:mx-0 lg:max-w-[380px]" data-reveal="hang" data-parallax="0.05">
+      <div class="framed rotate-[1deg]" data-tilt="5">
+        <img
+          src="/img/tableau-del-medio.jpg"
+          width="596"
+          height="800"
+          alt="Tableau : la Bodeguita del Medio à La Havane, ses murs couverts de signatures, deux voitures anciennes devant."
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <figcaption class="mt-4 text-[14px] leading-relaxed text-white/80">
+        La Bodeguita del Medio, à La Havane, et ses murs signés. Un tableau de la galerie du restaurant.
+      </figcaption>
+    </figure>
+
+    <div class="lg:col-span-8">
+      <h2 class="h2" data-reveal="words"><Words text="Signez le mur" /></h2>
+      <p class="mt-5 max-w-[50ch] text-[18px] leading-[1.6] text-white/90">
+        À La Havane, les murs de la Bodeguita del Medio sont couverts des mots de ses clients. Laissez le vôtre sur le nôtre.
+      </p>
+
+      <form class="sign-form mt-8 flex flex-col gap-4 sm:flex-row sm:items-end" novalidate data-sign>
+        <label class="flex flex-1 flex-col gap-[6px] text-[14px] text-white/85">
+          Votre mot
+          <input name="mot" maxlength="60" autocomplete="off" placeholder="¡Qué rico!" />
+        </label>
+        <label class="flex flex-col gap-[6px] text-[14px] text-white/85 sm:w-[30%]">
+          Votre prénom
+          <input name="prenom" maxlength="20" autocomplete="given-name" />
+        </label>
+        <button class="btn btn-rojo" type="submit">Signer le mur</button>
+      </form>
+      <p class="mt-3 text-[15px] text-sol" role="alert" data-sign-error hidden></p>
+
+      <ul class="wall relative mt-10 h-[460px] sm:h-[400px]" aria-label="Mots laissés sur le mur" data-wall data-reveal="write">
+        {
+          scribbles.slice(0, 8).map((s) => (
+            <li class="scribble">{s}</li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sign-form input {
+    min-height: 48px;
+    padding: 8px 2px;
+    border: 0;
+    border-bottom: 1.5px solid rgb(255 255 255 / 0.6);
+    background: transparent;
+    color: #fff;
+    font-size: 17px;
+    border-radius: 0;
+  }
+  .sign-form input::placeholder {
+    color: rgb(255 255 255 / 0.5);
+  }
+  .sign-form input:focus {
+    outline: none;
+    border-bottom-color: var(--color-sol);
+  }
+
+  /* Static fallback (no JS): a loose, readable cluster */
+  .wall:not(.is-live) {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 18px 34px;
+    height: auto;
+  }
+  .scribble {
+    font-family: var(--font-hand);
+    font-size: 28px;
+    line-height: 1.05;
+    color: #fff;
+  }
+  :global(.wall.is-live .scribble) {
+    position: absolute;
+    max-width: var(--w);
+    text-wrap: balance;
+  }
+  :global(.scribble small) {
+    display: block;
+    margin-top: 2px;
+    font-size: max(16px, 0.62em);
+    opacity: 0.85;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    /* On arrival, the existing words are written one after the other, left to right */
+    :global(.js .wall.is-live:not(.is-in) .scribble) {
+      clip-path: inset(-10% 100% -10% -4%);
+    }
+    :global(.wall.is-in .scribble) {
+      clip-path: inset(-10% -4% -10% -4%);
+      transition: clip-path 800ms var(--ease-out-strong);
+      transition-delay: calc(150ms + var(--i, 0) * 120ms);
+    }
+    :global(.scribble.is-new) {
+      animation: write-in 900ms var(--ease-out-strong) both;
+    }
+  }
+  @keyframes write-in {
+    from { clip-path: inset(-10% 100% -10% -4%); }
+    to { clip-path: inset(-10% -4% -10% -4%); }
+  }
+</style>
+
+<script>
+  import { scribbles } from '../content/site';
+
+  const wall = document.querySelector<HTMLElement>('[data-wall]')!;
+  const form = document.querySelector<HTMLFormElement>('[data-sign]')!;
+  const error = document.querySelector<HTMLElement>('[data-sign-error]')!;
+  const KEY = 'bodeguita:mur';
+
+  type Note = { t: string; n?: string };
+
+  const read = (): Note[] => {
+    try {
+      return JSON.parse(localStorage.getItem(KEY) ?? '[]');
+    } catch {
+      return [];
+    }
+  };
+  const write = (notes: Note[]) => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(notes));
+    } catch {
+      /* private mode: the note still shows until reload */
+    }
+  };
+
+  const fonts = ['Caveat', 'Gochi Hand', 'Reenie Beanie'];
+  const sizes = [1, 0.8, 1.12];
+  const colors = ['#ffffff', '#f2b92e', '#ffd8cc', '#cfe8f7'];
+  // A stable pseudo-random per slot, so the wall doesn't reshuffle on every visit.
+  const rand = (i: number, k: number) => {
+    const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
+    return x - Math.floor(x);
+  };
+
+  let mine = read();
+
+  const render = (fresh = -1) => {
+    const cols = wall.clientWidth < 520 ? 2 : 3;
+    const rows = cols === 2 ? 6 : 4;
+    const seeds = scribbles.slice(0, cols === 2 ? 6 : 8);
+    const room = cols * rows - seeds.length;
+    const shown = mine.slice(-room);
+    // The visitor's own words go first, top left, where they will see them.
+    const notes: Note[] = [...shown.slice().reverse(), ...seeds.map((t) => ({ t }))];
+
+    wall.classList.add('is-live');
+    wall.style.setProperty('--w', `${100 / cols - (cols === 2 ? 8 : 6)}%`);
+    wall.replaceChildren(
+      ...notes.map((note, i) => {
+        const li = document.createElement('li');
+        li.className = 'scribble';
+        li.style.setProperty('--i', String(i));
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const f = Math.floor(rand(i, 1) * fonts.length);
+        li.style.left = `${((col + 0.03 + rand(i, 2) * (cols === 2 ? 0.08 : 0.2)) / cols) * 100}%`;
+        li.style.top = `${((row + 0.04 + rand(i, 3) * 0.16) / rows) * 100}%`;
+        li.style.transform = `rotate(${(rand(i, 4) * 12 - 6).toFixed(1)}deg)`;
+        li.style.fontFamily = `"${fonts[f]}", cursive`;
+        // Long notes are written smaller, so they stay inside their patch of wall.
+        const long = note.t.length > 22 ? 0.78 : 1;
+        li.style.fontSize = `${(cols === 2 ? 21 : 30) * sizes[f] * long}px`;
+        li.style.color = colors[Math.floor(rand(i, 5) * colors.length)];
+        li.textContent = note.t;
+        if (note.n) {
+          const by = document.createElement('small');
+          by.textContent = `${note.n}`;
+          li.append(by);
+        }
+        if (i === fresh) li.classList.add('is-new');
+        return li;
+      }),
+    );
+  };
+
+  render();
+  let width = wall.clientWidth;
+  window.addEventListener('resize', () => {
+    if (wall.clientWidth === width) return;
+    width = wall.clientWidth;
+    render();
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const t = form.mot.value.trim();
+    const n = form.prenom.value.trim();
+    if (!t) {
+      error.textContent = 'Écrivez quelques mots avant de signer.';
+      error.hidden = false;
+      form.mot.focus();
+      return;
+    }
+    error.hidden = true;
+    mine = [...mine, { t, n: n || undefined }].slice(-12);
+    write(mine);
+    render(0);
+    form.reset();
+  });
+</script>

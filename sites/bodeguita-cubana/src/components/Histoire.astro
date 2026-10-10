@@ -1,0 +1,55 @@
+---
+// 02 — L'histoire. The most human fact about the place, said plainly:
+// a Chilean and a Cuban opened a Cuban bistro in Lyon in 2003 (press clipping on their site).
+// Their own painting of the restaurant, framed in pine, with a snapshot of the room pinned over it.
+import Words from './Words.astro';
+---
+
+<section id="histoire" class="section glaze curtain-sheet relative z-[1] rounded-t-[28px] lg:rounded-t-[44px]">
+  <div class="wrap grid items-start gap-16 lg:grid-cols-12 lg:gap-8">
+    <div class="lg:col-span-6">
+      <h2 class="h2 max-w-[14ch]" data-reveal="words"><Words text="Hugo est chilien, Aliucha est cubaine." /></h2>
+      <div class="mt-8 max-w-[56ch] space-y-5 text-[18px] leading-[1.65] text-marino/85" data-reveal="rows" style="--delay: 250ms">
+        <p>
+          En 2003, ils ouvrent au 44 rue de Cuire une bodeguita. À Cuba, c’est le bistrot du quartier&#8239;: on s’y retrouve, on y
+          parle cuisine de la Isla autour d’un rhum ou d’un vin d’Amérique du Sud.
+        </p>
+        <p>
+          Les recettes viennent de la mère d’Aliucha. Hugo y a ajouté ce qu’il a appris en cuisine auprès du chef Daniel Ancel. Le
+          cochinillo, lui, cuit toujours cinq heures, comme chez les paysans cubains.
+        </p>
+        <p>
+          Rentrés de Santiago ou de Varadero, ou sur le point d’y partir&#8239;? Ici, c’est le sas entre la fiesta cubaine et la vie de
+          tous les jours.
+        </p>
+      </div>
+      <p class="mt-10 max-w-[56ch] border-t border-marino/15 pt-5 text-[15px] leading-relaxed text-marino/75">
+        Deux grandes salles en bois, des murs rouges couverts de tableaux d’artistes cubains. Salle climatisée. On parle français y
+        español.
+      </p>
+    </div>
+
+    <div class="relative mx-auto w-full max-w-[460px] pb-16 lg:col-span-5 lg:col-start-8 lg:mt-3 lg:pb-0">
+      <figure data-reveal="hang" data-parallax="0.05">
+        <div class="framed rotate-[0.6deg]" data-tilt="5">
+          <img
+            src="/img/tableau-lyon.jpg"
+            width="598"
+            height="800"
+            alt="Tableau : la façade de la Bodeguita Cubana de Lyon peinte dans une rue de La Havane, une voiture rouge des années 50 devant."
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <figcaption class="ml-[56%] mt-5 text-[14px] leading-relaxed text-marino/70 sm:ml-[50%] lg:ml-[44%]">
+          La Bodeguita Cubana de Lyon, peinte comme une rue de La Havane. Un tableau de la galerie du restaurant.
+        </figcaption>
+      </figure>
+
+      <figure class="snapshot absolute -left-3 bottom-0 w-[54%] -rotate-[3.5deg] sm:-left-8 lg:-left-14 lg:bottom-6" data-reveal="pin" data-parallax="-0.09" style="--delay: 650ms">
+        <img src="/img/salle.jpg" width="702" height="379" alt="La salle : comptoir en pin, tabourets, murs rouges." loading="lazy" decoding="async" />
+        <figcaption class="absolute inset-x-2 bottom-[3px] font-hand text-[19px] leading-none text-marino/80">la salle, côté bar</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>

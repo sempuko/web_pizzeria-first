@@ -1,0 +1,215 @@
+---
+// Fixed header. Transparent over the façade, then glaze-white with navy type once you scroll.
+// Mobile: mark, « Réserver » and « Menu », which opens a full-screen panel of the blue wall.
+import Logo from './Logo.astro';
+import { contact } from '../content/site';
+
+const links = [
+  { href: '#carte', label: 'La carte' },
+  { href: '#mojito', label: 'Le mojito' },
+  { href: '#soirees', label: 'Soirées' },
+  { href: '#privatiser', label: 'Privatiser' },
+  { href: '#infos', label: 'Infos' },
+];
+---
+
+<header class="site-header fixed inset-x-0 top-0 z-50 text-white" data-header>
+  <div class="wrap flex h-16 items-center justify-between gap-6 px-5 lg:h-[76px] lg:px-[clamp(40px,5vw,88px)]">
+    <a href="#facade" class="flex-none" aria-label="La Bodeguita Cubana, retour en haut">
+      <span class="hidden sm:inline-flex"><Logo /></span>
+      <span class="inline-flex sm:hidden"><Logo compact /></span>
+    </a>
+
+    <nav class="hidden lg:block" aria-label="Sections">
+      <ul class="flex items-center gap-[clamp(20px,2.4vw,36px)] text-[15px] font-medium">
+        {
+          links.map((l) => (
+            <li>
+              <a class="nav-link" href={l.href}>
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <a class="btn btn-rojo min-h-[40px] px-4 text-[15px] lg:min-h-[44px] lg:px-5" href={contact.booking} target="_blank" rel="noopener" data-magnetic>
+        <span class="sm:hidden">Réserver</span><span class="hidden sm:inline">Réserver une table</span>
+      </a>
+      <button
+        type="button"
+        class="menu-toggle -mr-2 flex h-11 items-center px-2 text-[15px] font-medium lg:hidden"
+        aria-expanded="false"
+        aria-controls="menu-panel"
+        data-menu-open
+      >
+        Menu
+      </button>
+    </div>
+  </div>
+</header>
+
+<div
+  id="menu-panel"
+  class="menu-panel stucco fixed inset-0 z-[60] flex flex-col px-5 pb-8 text-white lg:hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Menu"
+  hidden
+  data-menu
+>
+  <div class="flex h-16 items-center justify-between">
+    <Logo />
+    <button type="button" class="-mr-2 flex h-11 items-center px-2 text-[15px] font-medium" data-menu-close>Fermer</button>
+  </div>
+  <ul class="mt-10 flex flex-col gap-1 font-gloock text-[44px] leading-[1.15]">
+    {
+      links.map((l, i) => (
+        <li class="menu-item" style={`--i:${i}`}>
+          <a href={l.href} data-menu-link>
+            {l.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <div class="mt-auto text-[15px] leading-relaxed text-white/85">
+    <p>{contact.street}, {contact.city}</p>
+    <a class="u-link" href={contact.phoneHref}>{contact.phone}</a>
+  </div>
+</div>
+
+<style>
+  .site-header {
+    transition:
+      background-color 260ms ease-out,
+      color 260ms ease-out,
+      box-shadow 260ms ease-out,
+      transform 420ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  /* Reading down: the header steps aside. Scrolling back up: it is there again. */
+  .site-header.is-tucked {
+    transform: translateY(-100%);
+  }
+  .site-header.is-solid {
+    background-color: rgb(246 245 240 / 0.97);
+    color: var(--color-marino);
+    box-shadow: 0 1px 0 rgb(27 42 85 / 0.12);
+  }
+
+  /* Arrives with the last tiles of the sign, not before */
+  :global(.js) .site-header {
+    animation: header-in 500ms ease-out 900ms both;
+  }
+  @keyframes header-in {
+    from { opacity: 0; }
+  }
+
+  .nav-link {
+    position: relative;
+    padding-block: 6px;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-rojo);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 320ms var(--ease-out-strong);
+  }
+  .nav-link.is-current::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  @media (hover: hover) {
+    .nav-link:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
+
+  .menu-panel:not([hidden]) {
+    animation: panel-in 380ms var(--ease-out-strong);
+  }
+  .menu-panel:not([hidden]) .menu-item {
+    animation: item-in 420ms var(--ease-out-strong) both;
+    animation-delay: calc(80ms + var(--i) * 40ms);
+  }
+  @keyframes panel-in {
+    from { clip-path: inset(0 0 100% 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+  @keyframes item-in {
+    from { opacity: 0; transform: translateY(12px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .site-header,
+    .menu-panel:not([hidden]),
+    .menu-panel:not([hidden]) .menu-item {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]')!;
+  const panel = document.querySelector<HTMLElement>('[data-menu]')!;
+  const openBtn = document.querySelector<HTMLButtonElement>('[data-menu-open]')!;
+  const closeBtn = document.querySelector<HTMLButtonElement>('[data-menu-close]')!;
+
+  // Solid once the page has moved off the top of the façade; tucked away while reading down,
+  // back as soon as the visitor scrolls up (a small threshold ignores trackpad jitter).
+  let lastY = window.scrollY;
+  const onScroll = () => {
+    const y = window.scrollY;
+    header.classList.toggle('is-solid', y > 24);
+    if (Math.abs(y - lastY) > 6) {
+      header.classList.toggle('is-tucked', y > lastY && y > 480 && panel.hidden === true);
+      lastY = y;
+    }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Mark the section being read: the last one whose top has passed the middle of the screen.
+  const links = [...header.querySelectorAll<HTMLAnchorElement>('.nav-link')];
+  const sections = [...document.querySelectorAll<HTMLElement>('main section[id]')];
+  let ticking = false;
+  const spy = () => {
+    ticking = false;
+    const line = window.innerHeight * 0.45;
+    const current = sections.filter((s) => s.getBoundingClientRect().top <= line).pop()?.id;
+    links.forEach((a) => a.classList.toggle('is-current', a.getAttribute('href') === `#${current}`));
+  };
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(spy);
+      }
+    },
+    { passive: true },
+  );
+  spy();
+
+  const setOpen = (open: boolean) => {
+    panel.hidden = !open;
+    openBtn.setAttribute('aria-expanded', String(open));
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+    (open ? closeBtn : openBtn).focus();
+  };
+  openBtn.addEventListener('click', () => setOpen(true));
+  closeBtn.addEventListener('click', () => setOpen(false));
+  panel.querySelectorAll('[data-menu-link]').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !panel.hidden) setOpen(false);
+  });
+</script>

@@ -1,0 +1,258 @@
+---
+// 03 — La carte, on the pine of the bar. Real 2024 menus, readable as text (they were PNGs).
+// Evening first: it is when most people book. Course names stay in Spanish, as printed by the house.
+// Motion: one red ink line slides between tabs; the new panel comes in through a short blur
+// (it reads as one surface changing, not two swapping) and its dishes fill in line by line.
+import Words from './Words.astro';
+import { alaCarte, entradas, menus, midi, postres } from '../content/site';
+
+const tabs = [
+  { id: 'soir', label: 'Le soir' },
+  { id: 'midi', label: 'Le midi' },
+  { id: 'desserts', label: 'Desserts' },
+];
+---
+
+<section id="carte" class="section pine">
+  <div class="wrap">
+    <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <h2 class="h2" data-reveal="words"><Words text="Ce qu’on vous sert" /></h2>
+        <p class="mt-5 max-w-[48ch] text-[18px] leading-[1.6] text-marino/85">
+          Tous les soirs, deux menus cubains et une carte. Du mardi au vendredi midi, la cuisine du marché.
+        </p>
+      </div>
+
+      <div class="tabs relative flex gap-7 border-b border-marino/20" role="tablist" aria-label="Moments de la carte" data-tabs>
+        {
+          tabs.map((t, i) => (
+            <button
+              type="button"
+              role="tab"
+              id={`tab-${t.id}`}
+              aria-controls={`panel-${t.id}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              class="tab pb-3 text-[18px] font-semibold"
+            >
+              {t.label}
+            </button>
+          ))
+        }
+        <span class="tab-ink" aria-hidden="true" data-ink></span>
+      </div>
+    </div>
+
+    <!-- Le soir -->
+    <div id="panel-soir" role="tabpanel" aria-labelledby="tab-soir" class="panel mt-12 lg:mt-16">
+      <div class="grid gap-14 lg:grid-cols-12 lg:gap-10">
+        <div class="lg:col-span-4">
+          <div class="menu-head" data-reveal="draw">
+            <h3 class="font-gloock text-[30px] leading-none">Entradas</h3>
+          </div>
+          <p class="mt-3 text-[14px] text-marino/70">Au choix, dans les deux menus</p>
+          <ul class="dishes mt-4" data-reveal="rows">
+            {
+              entradas.map((d) => (
+                <li>
+                  <p class="dish-name">{d.name}</p>
+                  <p class="dish-text">{d.text}</p>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        {
+          menus.map((m, i) => (
+            <div class="lg:col-span-4">
+              <div class="menu-head flex items-baseline justify-between gap-4" data-reveal="draw">
+                <h3 class="font-gloock text-[30px] leading-none">{m.name}</h3>
+                <p class="font-gloock text-[30px] leading-none text-rojo whitespace-nowrap">{m.price}</p>
+              </div>
+              <p class="mt-3 text-[14px] text-marino/70">Entrada, plato y postre</p>
+              <ul class="dishes mt-4" data-reveal="rows" style={`--delay:${(i + 1) * 120}ms`}>
+                {m.platos.map((d) => (
+                  <li>
+                    <p class="dish-name">{d.name}</p>
+                    <p class="dish-text">{d.text}</p>
+                  </li>
+                ))}
+              </ul>
+              <p class="mt-4 text-[15px] text-marino/80">
+                <span class="font-semibold">Postres</span>, desserts au choix
+              </p>
+              {i === menus.length - 1 && (
+                <figure class="snapshot relative mt-10 w-[78%] max-w-[340px] rotate-[2deg]" data-reveal="pin" data-tilt="6" data-parallax="-0.06">
+                  <img src="/img/plat.jpg" width="702" height="379" alt="Un plat du soir : volaille, riz, purée de patate douce." loading="lazy" decoding="async" />
+                  <figcaption class="absolute inset-x-2 bottom-[3px] font-hand text-[19px] leading-none text-marino/80">un soir, à la Bodeguita</figcaption>
+                </figure>
+              )}
+            </div>
+          ))
+        }
+      </div>
+      <p class="mt-14 border-t border-marino/20 pt-5 text-[16px] text-marino/85">
+        <span class="font-semibold">À la carte aussi</span>&#8239;: {alaCarte}
+      </p>
+    </div>
+
+    <!-- Le midi -->
+    <div id="panel-midi" role="tabpanel" aria-labelledby="tab-midi" class="panel mt-12 lg:mt-16" hidden>
+      <div class="grid gap-12 lg:grid-cols-12 lg:gap-10">
+        <p class="font-gloock text-[clamp(28px,3vw,40px)] leading-[1.15] lg:col-span-6">{midi.intro}</p>
+        <div class="lg:col-span-5 lg:col-start-8">
+          <h3 class="text-[15px] font-semibold text-marino/75">Les formules</h3>
+          <ul class="dishes mt-3" data-reveal="rows">
+            {
+              midi.formules.map((f) => (
+                <li>
+                  <p class="dish-name">{f}</p>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="mt-5 text-[16px] text-marino/85">{midi.note}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desserts -->
+    <div id="panel-desserts" role="tabpanel" aria-labelledby="tab-desserts" class="panel mt-12 lg:mt-16" hidden>
+      <ul class="dishes grid gap-x-10 sm:grid-cols-2 lg:max-w-[860px]" data-reveal="rows">
+        {
+          postres.map((d) => (
+            <li>
+              <p class="dish-name">{d.name}</p>
+              <p class="dish-text">{d.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mt-6 text-[16px] text-marino/85">Compris dans les menus du soir et dans les formules du midi.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .tab {
+    color: rgb(27 42 85 / 0.62);
+    transition:
+      color 200ms ease,
+      transform 140ms var(--ease-out-strong);
+  }
+  .tab:active {
+    transform: scale(0.97);
+  }
+  .tab[aria-selected="true"] {
+    color: var(--color-marino);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tab:hover {
+      color: var(--color-marino);
+    }
+  }
+
+  /* One line for all tabs: 1px wide, positioned and stretched with a single transform */
+  .tab-ink {
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 1px;
+    height: 3px;
+    background: var(--color-rojo);
+    transform-origin: 0 50%;
+  }
+  .tab-ink.is-ready {
+    transition: transform 420ms var(--ease-in-out-strong);
+  }
+
+  .menu-head {
+    position: relative;
+    padding-bottom: 14px;
+  }
+  .menu-head::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-marino);
+    transform-origin: 0 50%;
+  }
+  .dishes > li {
+    padding-block: 14px;
+    border-bottom: 1px solid rgb(27 42 85 / 0.16);
+  }
+  .dish-name {
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .dish-text {
+    margin-top: 4px;
+    max-width: 44ch;
+    font-size: 15.5px;
+    line-height: 1.5;
+    color: rgb(27 42 85 / 0.78);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .panel.is-switching {
+      animation: panel-show 300ms ease-out;
+    }
+  }
+  @keyframes panel-show {
+    from {
+      opacity: 0;
+      filter: blur(4px);
+    }
+  }
+</style>
+
+<script>
+  // Tabs, with arrow keys, as in the WAI-ARIA pattern. Keyboard switching moves the ink too,
+  // but the panel content changes instantly enough not to slow anyone down.
+  const list = document.querySelector<HTMLElement>('[data-tabs]')!;
+  const tabs = [...list.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+  const ink = list.querySelector<HTMLElement>('[data-ink]')!;
+
+  const placeInk = (tab: HTMLButtonElement) => {
+    ink.style.transform = `translateX(${tab.offsetLeft}px) scaleX(${tab.offsetWidth})`;
+  };
+
+  const select = (tab: HTMLButtonElement, focus = false) => {
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      const panel = document.getElementById(t.getAttribute('aria-controls')!)!;
+      panel.hidden = !on;
+      if (!on) return;
+      // Replay the entrance: blur in, then the dishes line by line.
+      panel.classList.remove('is-switching');
+      panel.querySelectorAll('[data-reveal="rows"]').forEach((rows) => rows.classList.remove('is-in'));
+      void panel.offsetWidth;
+      panel.classList.add('is-switching');
+      panel.querySelectorAll('[data-reveal="rows"]').forEach((rows) => rows.classList.add('is-in'));
+    });
+    placeInk(tab);
+    if (focus) tab.focus();
+  };
+
+  placeInk(tabs[0]);
+  requestAnimationFrame(() => ink.classList.add('is-ready'));
+  window.addEventListener('resize', () => placeInk(tabs.find((t) => t.tabIndex === 0)!));
+  document.fonts.ready.then(() => placeInk(tabs.find((t) => t.tabIndex === 0)!));
+
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => select(t));
+    t.addEventListener('keydown', (e) => {
+      const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!step) return;
+      e.preventDefault();
+      select(tabs[(i + step + tabs.length) % tabs.length], true);
+    });
+  });
+</script>

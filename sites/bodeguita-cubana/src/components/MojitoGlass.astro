@@ -1,0 +1,350 @@
+---
+// The house mojito, built in the glass as the recipe is read: mint, lime, sugar, rum,
+// angostura, then soda and ice. Each step lights its line of the recipe ([data-recipe]).
+// Tapping the glass drinks it and pours another. Explanatory motion, played once on arrival.
+
+// Positions are fixed so the glass looks the same every time.
+const sugar = Array.from({ length: 14 }, (_, i) => ({ x: 64 + ((i * 37) % 72), y: 277 + ((i * 13) % 6), d: i * 25 }));
+const bubbles = [
+  { x: 70, r: 2.4, dur: 2.6, delay: 0 },
+  { x: 86, r: 3.2, dur: 3.4, delay: 0.7 },
+  { x: 99, r: 2, dur: 2.2, delay: 1.3 },
+  { x: 112, r: 2.8, dur: 3, delay: 0.4 },
+  { x: 125, r: 2.2, dur: 2.5, delay: 1.8 },
+  { x: 78, r: 1.8, dur: 2.1, delay: 2.2 },
+  { x: 118, r: 3, dur: 3.6, delay: 2.6 },
+  { x: 94, r: 2.5, dur: 2.8, delay: 3 },
+];
+---
+
+<div class="mojito-glass">
+  <button type="button" class="glass-btn" aria-label="Servir un autre mojito" data-glass-btn>
+    <svg class="glass" viewBox="0 0 200 320" aria-hidden="true" data-glass>
+      <defs>
+        <clipPath id="mg-inside">
+          <path d="M48 44 L152 44 L143 284 L57 284 Z"></path>
+        </clipPath>
+      </defs>
+
+      <!-- Solids first, so the liquid poured later sits over them -->
+      <g class="solids">
+      <g class="leaves">
+        <g transform="translate(70 270) rotate(-28)"><path class="leaf" d="M0 0 C8 -10 22 -10 30 0 C22 10 8 10 0 0 Z" fill="#5cb85c"></path></g>
+        <g transform="translate(96 276) rotate(12)"><path class="leaf" d="M0 0 C8 -10 22 -10 30 0 C22 10 8 10 0 0 Z" fill="#3f9d4f" style="--d:90ms"></path></g>
+        <g transform="translate(86 262) rotate(-68)"><path class="leaf" d="M0 0 C8 -10 22 -10 30 0 C22 10 8 10 0 0 Z" fill="#6cc46a" style="--d:170ms"></path></g>
+      </g>
+
+      <g transform="translate(80 276) rotate(8)"><g class="drop lime"><path d="M-16 0 A16 16 0 0 1 16 0 Z" fill="#c7e06a" stroke="#6f9e2b" stroke-width="3"></path><path d="M0 -1 L-9 -11 M0 -1 L0 -14 M0 -1 L9 -11" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"></path></g></g>
+      <g transform="translate(120 272) rotate(-24)"><g class="drop lime" style="--d:140ms"><path d="M-16 0 A16 16 0 0 1 16 0 Z" fill="#c7e06a" stroke="#6f9e2b" stroke-width="3"></path><path d="M0 -1 L-9 -11 M0 -1 L0 -14 M0 -1 L9 -11" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"></path></g></g>
+
+      <g class="sugar">
+        {sugar.map((s) => <circle cx={s.x} cy={s.y} r="1.7" fill="#fff" style={`--d:${s.d}ms`} />)}
+      </g>
+
+      <g class="ice">
+        <g transform="translate(72 96) rotate(12)"><rect class="cube" x="-13" y="-13" width="26" height="26" rx="5"></rect></g>
+        <g transform="translate(110 88) rotate(-18)"><rect class="cube" x="-13" y="-13" width="26" height="26" rx="5" style="--d:120ms"></rect></g>
+        <g transform="translate(92 124) rotate(30)"><rect class="cube" x="-12" y="-12" width="24" height="24" rx="5" style="--d:220ms"></rect></g>
+      </g>
+
+      <g transform="translate(118 -6) rotate(14)"><rect class="straw" x="0" y="0" width="9" height="196" rx="4"></rect></g>
+      </g>
+
+      <!-- Liquid, bubbles: inside the glass only -->
+      <g clip-path="url(#mg-inside)">
+        <g class="liquid">
+          <rect x="40" y="44" width="120" height="244"></rect>
+          <rect class="surface" x="40" y="44" width="120" height="3"></rect>
+        </g>
+        <g class="bubbles">
+          {bubbles.map((b) => <circle cx={b.x} cy="280" r={b.r} style={`--dur:${b.dur}s;--delay:${b.delay}s`} />)}
+        </g>
+      </g>
+
+      <g class="bitters">
+        <path d="M92 0 C95 4 96 7 92 10 C88 7 89 4 92 0 Z"></path>
+        <path d="M100 0 C103 4 104 7 100 10 C96 7 97 4 100 0 Z" style="--d:160ms"></path>
+        <path d="M108 0 C111 4 112 7 108 10 C104 7 105 4 108 0 Z" style="--d:320ms"></path>
+      </g>
+
+      <!-- The glass itself, drawn last so its rim and walls sit over everything -->
+      <path d="M44 40 L156 40 L146 300 L54 300 Z" fill="rgb(255 255 255 / .06)" stroke="rgb(255 255 255 / .92)" stroke-width="3" stroke-linejoin="round"></path>
+      <path d="M57 284 L143 284 L146 300 L54 300 Z" fill="rgb(255 255 255 / .2)"></path>
+      <path d="M61 58 L67 268" stroke="rgb(255 255 255 / .35)" stroke-width="4" stroke-linecap="round"></path>
+    </svg>
+  </button>
+  <p class="glass-hint font-hand text-[22px] leading-none text-white/85" data-glass-hint>touchez le verre, on vous en sert un autre</p>
+</div>
+
+<style>
+  .mojito-glass {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .glass-btn {
+    display: block;
+    border-radius: 12px;
+    transition: transform 160ms var(--ease-out-strong);
+  }
+  .glass-btn:active {
+    transform: scale(0.97);
+  }
+  .glass {
+    display: block;
+    width: clamp(190px, 21vw, 290px);
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Every animated piece transforms around its own box */
+  .leaf,
+  .drop,
+  .cube,
+  .straw,
+  .sugar circle,
+  .bitters path,
+  .bubbles circle {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+
+  /* Resting state of each step, before it is played */
+  .leaf {
+    opacity: 0;
+    transform: scale(0.4) rotate(-20deg);
+  }
+  .drop {
+    opacity: 0;
+    transform: translateY(-280px);
+  }
+  .sugar circle {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  .cube {
+    fill: rgb(255 255 255 / 0.28);
+    stroke: rgb(255 255 255 / 0.85);
+    stroke-width: 2;
+    opacity: 0;
+    transform: translateY(-240px) rotate(-40deg);
+  }
+  .straw {
+    fill: var(--color-rojo);
+    opacity: 0;
+    transform: translateY(-120px);
+  }
+  .liquid {
+    transform: translateY(240px);
+    transition: transform 1100ms var(--ease-in-out-strong);
+  }
+  .liquid rect:first-child {
+    fill: #f2d48f;
+    fill-opacity: 0.55;
+    transition: fill 700ms ease;
+  }
+  .surface {
+    fill: #fff;
+    fill-opacity: 0.55;
+  }
+  .bitters path {
+    fill: #8c2a1c;
+    opacity: 0;
+  }
+  .bubbles circle {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.8);
+    stroke-width: 1.2;
+    opacity: 0;
+  }
+
+  /* Step 1, mint: leaves unfurl */
+  .s1 .leaf {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 300ms ease-out,
+      transform 700ms cubic-bezier(0.34, 1.4, 0.64, 1);
+    transition-delay: var(--d, 0ms);
+  }
+  /* Step 2, lime: wedges drop in and bounce once on the bottom */
+  .s2 .lime {
+    animation: fall 720ms both;
+    animation-delay: var(--d, 0ms);
+  }
+  /* Step 3, sugar */
+  .s3 .sugar circle {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 200ms ease-out,
+      transform 500ms cubic-bezier(0.5, 0, 0.75, 0);
+    transition-delay: var(--d, 0ms);
+  }
+  /* Step 4, rum: a third of the glass */
+  .s4 .liquid {
+    transform: translateY(170px);
+  }
+  /* Step 5, angostura: three drops, the rum warms */
+  .s5 .bitters path {
+    animation: bitters 900ms both;
+    animation-delay: var(--d, 0ms);
+  }
+  .s5 .liquid rect:first-child {
+    fill: #eab07e;
+  }
+  /* Step 6, soda and ice: filled, pale, cold */
+  .s6 .liquid {
+    transform: translateY(36px);
+  }
+  .s6 .liquid rect:first-child {
+    fill: #e1f4d6;
+    fill-opacity: 0.45;
+  }
+  .s6 .cube {
+    animation: cube-in 900ms both;
+    animation-delay: calc(300ms + var(--d, 0ms));
+  }
+  .s6 .straw {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 300ms ease-out 900ms,
+      transform 700ms var(--ease-out-strong) 900ms;
+  }
+  .is-fizzing .bubbles circle {
+    animation: rise var(--dur) linear var(--delay) infinite;
+  }
+  .is-paused .bubbles circle {
+    animation-play-state: paused;
+  }
+
+  /* Drinking it: everything goes, the liquid first */
+  .is-drinking .liquid {
+    transform: translateY(240px);
+    transition-duration: 700ms;
+  }
+  .solids {
+    transition: opacity 300ms ease-out;
+  }
+  .is-drinking .solids {
+    opacity: 0;
+  }
+  .no-transition,
+  .no-transition * {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .glass-hint {
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 400ms ease-out,
+      transform 500ms var(--ease-out-strong);
+  }
+  .glass-hint.is-shown {
+    opacity: 1;
+    transform: none;
+  }
+
+  @keyframes fall {
+    0% { opacity: 1; transform: translateY(-280px); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5); }
+    70% { transform: translateY(0); animation-timing-function: ease-out; }
+    84% { transform: translateY(-9px); animation-timing-function: ease-in; }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bitters {
+    0% { opacity: 1; transform: translateY(0); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5); }
+    80% { opacity: 1; transform: translateY(206px); }
+    100% { opacity: 0; transform: translateY(210px) scale(0.4); }
+  }
+  @keyframes cube-in {
+    0% { opacity: 1; transform: translateY(-240px) rotate(-40deg); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5); }
+    65% { transform: translateY(14px) rotate(4deg); animation-timing-function: ease-out; }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes rise {
+    0% { opacity: 0; transform: translateY(0); }
+    15% { opacity: 0.9; }
+    85% { opacity: 0.7; }
+    100% { opacity: 0; transform: translateY(-180px); }
+  }
+</style>
+
+<script>
+  const svg = document.querySelector<SVGSVGElement>('[data-glass]')!;
+  const button = document.querySelector<HTMLButtonElement>('[data-glass-btn]')!;
+  const hint = document.querySelector<HTMLElement>('[data-glass-hint]')!;
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-recipe] > div')];
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const STEP = 440;
+  let timers: number[] = [];
+  let playing = false;
+
+  const steps = (n: number) => {
+    for (let i = 1; i <= 6; i++) svg.classList.toggle(`s${i}`, i <= n);
+  };
+
+  const showAll = () => {
+    steps(6);
+    rows.forEach((r) => r.classList.add('is-on'));
+    hint.classList.add('is-shown');
+  };
+
+  const play = () => {
+    playing = true;
+    rows.forEach((row, i) => {
+      timers.push(
+        window.setTimeout(() => {
+          steps(i + 1);
+          row.classList.add('is-on', 'is-current');
+          window.setTimeout(() => row.classList.remove('is-current'), STEP + 200);
+        }, i * STEP),
+      );
+    });
+    timers.push(
+      window.setTimeout(() => {
+        svg.classList.add('is-fizzing');
+        hint.classList.add('is-shown');
+        playing = false;
+      }, rows.length * STEP + 700),
+    );
+  };
+
+  if (reduce.matches) {
+    showAll();
+  } else {
+    // Play once, when the glass is properly on screen.
+    new IntersectionObserver(
+      ([entry], observer) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        play();
+      },
+      { threshold: 0.5 },
+    ).observe(svg);
+
+    // Bubbles only rise while someone can see them.
+    new IntersectionObserver(([entry]) => svg.classList.toggle('is-paused', !entry.isIntersecting)).observe(svg);
+  }
+
+  // Tap: drink it, then pour another.
+  button.addEventListener('click', () => {
+    if (reduce.matches || playing) return;
+    timers.forEach(clearTimeout);
+    timers = [];
+    playing = true;
+    svg.classList.remove('is-fizzing');
+    svg.classList.add('is-drinking');
+    window.setTimeout(() => {
+      svg.classList.add('no-transition');
+      svg.classList.remove('is-drinking');
+      steps(0);
+      void svg.getBoundingClientRect();
+      svg.classList.remove('no-transition');
+      play();
+    }, 800);
+  });
+</script>

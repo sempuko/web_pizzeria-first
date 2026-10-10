@@ -1,0 +1,36 @@
+---
+// The restaurant's own mark: the red triangle and white star of its business card,
+// the name set in capitals over a rule. Colour of the name follows the surface (currentColor).
+interface Props {
+  class?: string;
+  compact?: boolean;
+}
+
+const { class: className, compact = false } = Astro.props;
+---
+
+<span class:list={['logo inline-flex items-center gap-[10px]', className]}>
+  <svg class="h-[26px] w-[30px] flex-none" viewBox="0 0 30 26" aria-hidden="true">
+    <path d="M15 1 L29 25 L1 25 Z" fill="#d2232f"></path>
+    <path
+      d="M15 10.5 L16.29 14.22 L20.23 14.3 L17.09 16.68 L18.23 20.45 L15 18.2 L11.77 20.45 L12.91 16.68 L9.77 14.3 L13.71 14.22 Z"
+      fill="#fff"></path>
+  </svg>
+  {
+    !compact && (
+      <span class="logo-name font-bold uppercase leading-none tracking-[0.06em] text-[14px]" style="font-variation-settings: 'wdth' 85">
+        La Bodeguita Cubana
+      </span>
+    )
+  }
+</span>
+
+<style>
+  .logo-name {
+    padding-bottom: 5px;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 2px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+  }
+</style>
