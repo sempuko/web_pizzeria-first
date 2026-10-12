@@ -1,0 +1,386 @@
+/* MINIMAXXX — hard black and white, as on their Instagram: overexposed whites, club fog, glow around
+   the type, a thin technical grid. Greys only live inside the fog and the light, never as text colour.
+   Type: Archivo stands in for their Nimbus Sans (Condensed): one family, the width axis does the talking.
+   See DESIGN-BRIEF.md for the why of every token. */
+
+:root {
+  --black: #000;
+  --dark: #1a1a1a;
+  --ash: #4d4d4d;
+  --grey: #8c8c8c;
+  --light: #d8d8d8;
+  --white: #fff;
+
+  --font: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --hand: "Reenie Beanie", "Bradley Hand", cursive;
+
+  --gutter: clamp(16px, 2.2vw, 32px);
+  /* Side margin of the framed sections: a little narrower than the screen, centred, 1440px at most. */
+  --side: max(var(--gutter), 6vw, calc((100vw - 1440px) / 2));
+
+  /* Type scale. Display sizes are condensed and set almost solid. */
+  --fs-giant: clamp(3.4rem, 12.5vw, 13rem);
+  --fs-xl: clamp(2.4rem, 7vw, 6.6rem);
+  --fs-l: clamp(1.5rem, 3.2vw, 2.9rem);
+  --fs-m: clamp(1.05rem, 1.35vw, 1.3rem);
+  --fs-s: 0.8125rem;
+  --fs-xs: 0.625rem;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font);
+  font-size: var(--fs-m);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+main {
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--black);
+  color: var(--white);
+}
+
+.on-black ::selection {
+  background: var(--white);
+  color: var(--black);
+}
+
+/* ------------------------------------------------------------------
+   Surfaces: full-bleed pages that cut hard from one to the next.
+   ------------------------------------------------------------------ */
+
+.on-black {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.on-white {
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.on-grey {
+  background-color: var(--light);
+  color: var(--black);
+}
+
+.framed {
+  padding-inline: var(--side);
+}
+
+/* Photocopy grain. Still by default; `.grain-live` makes it jump between positions in hard steps,
+   on the compositor only (transform), like film grain or a cheap club projector. Live grain is kept
+   for the loud pages (guests, footer): over the fog of the first screen it flickers too much. */
+.grain {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+}
+
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: -120px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain, 0.5);
+}
+
+.grain-live::after {
+  animation: grain 0.5s steps(1) infinite;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 2.2 -1.25'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  17% { transform: translate(-37px, 23px); }
+  33% { transform: translate(51px, -14px); }
+  50% { transform: translate(-19px, -58px); }
+  67% { transform: translate(64px, 41px); }
+  83% { transform: translate(-60px, 9px); }
+}
+
+.on-white.grain::after,
+.on-grey.grain::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 2.2 -1.3'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ------------------------------------------------------------------
+   Type
+   ------------------------------------------------------------------ */
+
+/* Section title, as in their deck: « 0007—TALK SESSIONS », tag in brackets as a superscript. */
+.head {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  font-size: var(--fs-l);
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 0.86;
+  letter-spacing: -0.035em;
+}
+
+.head .n {
+  font-variant-numeric: tabular-nums;
+}
+
+.tag {
+  font-size: max(0.32em, 10px);
+  font-weight: 700;
+  font-stretch: 100%;
+  letter-spacing: 0;
+  line-height: 1;
+  margin-left: 0.15em;
+  padding-top: 0.08em;
+  white-space: nowrap;
+}
+
+.giant {
+  font-size: var(--fs-giant);
+  font-weight: 900;
+  font-stretch: 62.5%;
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+}
+
+.xl {
+  font-size: var(--fs-xl);
+  font-weight: 850;
+  font-stretch: 70%;
+  line-height: 0.84;
+  letter-spacing: -0.04em;
+}
+
+.l {
+  font-size: var(--fs-l);
+  font-weight: 800;
+  font-stretch: 80%;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+}
+
+.s {
+  font-size: var(--fs-s);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+/* Halation: the overexposed glow around white type on their festival posters.
+   A filter on its own layer, not text-shadow: the GPU does the blur, the browser only rasterises the sharp
+   letters. Wide text-shadows made every scroll re-rasterise the glow, which is what made scrolling stutter. */
+.glow {
+  filter: drop-shadow(0 0 0.03em rgb(255 255 255 / 0.85)) drop-shadow(0 0 0.22em rgb(255 255 255 / 0.32));
+  will-change: filter;
+}
+
+/* Fine print: a legal notice. Never below 10px on a phone. */
+.fine {
+  font-size: max(var(--fs-xs), 10px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+.hand {
+  font-family: var(--hand);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 200;
+  padding: 10px 14px;
+  background: var(--white);
+  color: var(--black);
+  font-size: var(--fs-s);
+  font-weight: 800;
+  transform: translateY(-160%);
+}
+
+.skip:focus-visible {
+  transform: none;
+}
+
+/* ------------------------------------------------------------------
+   Buttons: hard rectangles, they press.
+   ------------------------------------------------------------------ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  min-height: 48px;
+  padding: 0 1.1em;
+  border: 2px solid currentColor;
+  font-size: var(--fs-s);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  transition: transform 160ms var(--ease-out);
+  user-select: none;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-solid {
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
+}
+
+.on-black .btn-solid {
+  background: var(--white);
+  color: var(--black);
+  border-color: var(--white);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn {
+    transition:
+      transform 160ms var(--ease-out),
+      background-color 120ms ease,
+      color 120ms ease;
+  }
+
+  .btn:not(.btn-solid):hover {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .on-black .btn:not(.btn-solid):hover {
+    background: var(--white);
+    color: var(--black);
+  }
+
+  .btn-solid:hover {
+    background: transparent;
+    color: var(--black);
+  }
+
+  .on-black .btn-solid:hover {
+    background: transparent;
+    color: var(--white);
+  }
+}
+
+/* Inline SVG pictograms take the colour of the text around them. */
+.picto {
+  width: auto;
+  height: 1em;
+  fill: currentColor;
+  flex: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .grain-live::after {
+    animation: none;
+  }
+}

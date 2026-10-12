@@ -1,13 +1,14 @@
 # Sites
 
-One folder per restaurant mockup. Each folder is a complete, independent Astro project
+One folder per client mockup. Each folder is a complete, independent Astro project
 (its own `package.json`, `node_modules` and port), so sites never share code or break each other.
 
 The repository root is still the first project, **La Stella d'Oro** (port 4321). It is left as is.
 
-| Folder | Restaurant | Port |
+| Folder | Client | Port |
 |---|---|---|
 | `bodeguita-cubana/` | La Bodeguita Cubana, Lyon 4e (cubain) | 4322 |
+| `minimaxxx/` | MINIMAXXX, friperie événementielle en tournée (homepage v1) | 4323 |
 
 ## Run one site
 

@@ -1,0 +1,257 @@
+---
+// The menu is their own deck's table of contents, 0000 to 0013. Sections not on this page yet
+// keep their bracketed tag, the way the deck marks « RADIO [UNDER CONSTRUCTION] ».
+import { index, contact } from '../content/site';
+---
+
+<div id="menu" class="menu on-white" data-menu role="dialog" aria-modal="true" aria-label="Index" hidden>
+  <div class="menu-top">
+    <img class="menu-logo" src="/img/wordmark-black.png" alt="Minimaxxx" width="2400" height="306" />
+    <button class="menu-close s" type="button" data-menu-close>Fermer</button>
+  </div>
+
+  <ol class="menu-list">
+    {
+      index.map((item, i) => (
+        <li style={`--i: ${i}`}>
+          {item.href ? (
+            <a class="row" href={item.href} data-menu-link>
+              <span class="n">{item.n}</span>
+              <span class="name">
+                {item.name}
+                {item.tag && <span class="tag">[{item.tag}]</span>}
+              </span>
+            </a>
+          ) : (
+            <span class="row is-off">
+              <span class="n">{item.n}</span>
+              <span class="name">
+                {item.name}
+                <span class="tag">[{item.tag}]</span>
+              </span>
+            </span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+
+  <p class="menu-foot fine">
+    <a href={`mailto:${contact.email}`}>{contact.email}</a>
+    <a href={contact.instagram} target="_blank" rel="noopener">Instagram {contact.handle}</a>
+    <a href={contact.tiktok} target="_blank" rel="noopener">TikTok</a>
+  </p>
+</div>
+
+<script>
+  import { lockScroll, scrollToTarget } from '../scripts/scroll';
+
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  const openBtn = document.querySelector<HTMLButtonElement>('[data-menu-open]');
+  const closeBtn = menu?.querySelector<HTMLButtonElement>('[data-menu-close]');
+  const page = document.querySelectorAll<HTMLElement>('main, .site-header, footer, [data-radio], [data-radio-pill]');
+
+  if (menu && openBtn && closeBtn) {
+    let open = false;
+
+    const setOpen = (next: boolean, { restoreFocus = true } = {}) => {
+      if (next === open) return;
+      open = next;
+      openBtn.setAttribute('aria-expanded', String(next));
+      page.forEach((el) => (el.inert = next));
+      lockScroll(next);
+      if (next) {
+        menu.hidden = false;
+        // One frame in the hidden state first, so the curtain has somewhere to come from.
+        requestAnimationFrame(() => requestAnimationFrame(() => menu.classList.add('is-open')));
+        closeBtn.focus({ preventScroll: true });
+      } else {
+        menu.classList.remove('is-open');
+        const done = () => {
+          if (!open) menu.hidden = true;
+        };
+        menu.addEventListener('transitionend', done, { once: true });
+        setTimeout(done, 400);
+        if (restoreFocus) openBtn.focus({ preventScroll: true });
+      }
+    };
+
+    openBtn.addEventListener('click', () => setOpen(true));
+    closeBtn.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && open) setOpen(false);
+    });
+
+    menu.querySelectorAll<HTMLAnchorElement>('[data-menu-link]').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const id = link.getAttribute('href')!;
+        const target = document.querySelector<HTMLElement>(id);
+        if (!target) return;
+        e.preventDefault();
+        setOpen(false, { restoreFocus: false });
+        if (id === '#radio') {
+          document.dispatchEvent(new Event('mmx:radio-open'));
+          return;
+        }
+        // Let the curtain start lifting before the page moves.
+        setTimeout(() => scrollToTarget(target), 120);
+      });
+    });
+  }
+</script>
+
+<style>
+  .menu {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 14px var(--gutter) var(--gutter);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    isolation: isolate;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 220ms var(--ease-in-out);
+  }
+
+  /* Closed means gone: out of the tab order and the accessibility tree, not just clipped. */
+  .menu[hidden] {
+    display: none;
+  }
+
+  .menu.is-open {
+    clip-path: inset(0 0 0 0);
+    transition-duration: 380ms;
+  }
+
+  .menu-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .menu-logo {
+    width: clamp(118px, 11vw, 168px);
+    margin: 10px 0;
+  }
+
+  .menu-close {
+    min-height: 44px;
+    font-weight: 800;
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .menu-close:active {
+    transform: scale(0.97);
+  }
+
+  .menu-list {
+    margin: auto 0;
+    padding: 3vh 0;
+  }
+
+  .row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25em 1fr;
+    gap: 0.3em;
+    font-size: min(6.2svh, 10.5vw);
+    font-weight: 900;
+    font-stretch: 68%;
+    line-height: 0.86;
+    letter-spacing: -0.035em;
+    opacity: 0;
+    transform: translateY(35%);
+    transition:
+      opacity 200ms var(--ease-out),
+      transform 260ms var(--ease-out);
+  }
+
+  .is-open .row {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(80ms + var(--i) * 22ms);
+  }
+
+  .n {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .name {
+    display: flex;
+    align-items: flex-start;
+    white-space: nowrap;
+  }
+
+  /* Not on this page yet: outlined, not greyed. */
+  .is-off .n,
+  .is-off .name {
+    color: transparent;
+    -webkit-text-stroke: 1.2px var(--black);
+  }
+
+  .is-off .tag {
+    color: var(--black);
+    -webkit-text-stroke: 0;
+  }
+
+  /* A white bar in difference mode turns the row black-on-white into white-on-black as it wipes in. */
+  a.row::after {
+    content: '';
+    position: absolute;
+    inset: -0.04em -0.12em;
+    background: var(--white);
+    mix-blend-mode: difference;
+    pointer-events: none;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 200ms var(--ease-out);
+  }
+
+  a.row:focus-visible::after {
+    clip-path: inset(0 0 0 0);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    a.row:hover::after {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @media (max-width: 720px) {
+    .row {
+      font-size: min(5.6svh, 8vw);
+      font-stretch: 62.5%;
+    }
+  }
+
+  .menu-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+  }
+
+  .menu-foot a {
+    padding: 6px 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu,
+    .menu.is-open {
+      transition: opacity 160ms ease;
+      clip-path: none;
+    }
+
+    .menu {
+      opacity: 0;
+    }
+
+    .menu.is-open {
+      opacity: 1;
+    }
+
+    .row {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,220 @@
+---
+// 0001—Manifesto. Read like a photocopy being made: the scanner light stays put in the viewport,
+// the page slides under it, and the text prints as it passes the light.
+// Built for smooth scrolling: the printed text is painted once, inside a clipping window. The reveal only
+// moves the window up/down and the text the other way (transforms on their own layers), so nothing is
+// repainted while you scroll; the old version clipped and repainted the glowing text on every frame.
+import Picto from './Picto.astro';
+import { manifesto, pillars } from '../content/site';
+
+const icons = ['recycle', 'person', 'hot'] as const;
+---
+
+<section id="manifesto" class="manifesto on-black grain framed">
+  <h2 class="head"><span class="n">0001</span>—Manifesto<span class="tag">[Since 2018]</span></h2>
+
+  <p class="quote s">&gt; “{manifesto.quote}”</p>
+
+  <div class="scan" data-scan>
+    <p class="scan-ghost xl" aria-hidden="true">
+      {manifesto.lines.map((line) => <span>{line}</span>)}
+    </p>
+    <div class="scan-window" data-scan-window>
+      <p class="scan-print xl glow" data-scan-print>
+        {manifesto.lines.map((line) => <span>{line}</span>)}
+      </p>
+    </div>
+    <span class="scan-light" data-scan-light aria-hidden="true"></span>
+  </div>
+
+  <ol class="pillars">
+    {
+      pillars.map((p, i) => (
+        <li>
+          <span class="pillar-n l">{i + 1}.</span>
+          <Picto name={icons[i]} class="pillar-icon" />
+          <h3 class="pillar-title l">{p.title}</h3>
+          <p class="s">{p.text}</p>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<script>
+  import { reduce } from '../scripts/scroll';
+
+  const scan = document.querySelector<HTMLElement>('[data-scan]');
+  const win = scan?.querySelector<HTMLElement>('[data-scan-window]');
+  const print = scan?.querySelector<HTMLElement>('[data-scan-print]');
+  const light = scan?.querySelector<HTMLElement>('[data-scan-light]');
+
+  if (scan && win && print && light && !reduce.matches) {
+    // The light sits at this height of the viewport, whatever the scroll.
+    const LINE = 0.62;
+    // The window reaches PAD px past the text on every side, so the glow is never cut.
+    const PAD = 60;
+    let lit = false;
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const r = scan.getBoundingClientRect();
+      const h = r.height;
+      // Light position inside the block, in px; it runs on PAD past the last line to print its glow too.
+      const y = Math.min(h + PAD, Math.max(0, window.innerHeight * LINE - r.top));
+      // The window is h + 2·PAD tall and starts PAD above the block: shifted by t its bottom edge sits at y.
+      const t = y - h - PAD;
+      win.style.transform = `translate3d(0, ${t.toFixed(1)}px, 0)`;
+      print.style.transform = `translate3d(0, ${(-t).toFixed(1)}px, 0)`;
+      light.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+      const on = y > 0 && y < h + PAD;
+      if (on !== lit) {
+        lit = on;
+        light.style.opacity = on ? '1' : '0';
+      }
+    };
+    const request = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(update);
+      }
+    };
+    scan.classList.add('is-live');
+    window.addEventListener('scroll', request, { passive: true });
+    window.addEventListener('resize', request);
+    update();
+  }
+</script>
+
+<style>
+  .manifesto {
+    --grain: 0.22;
+    padding-block: 20vh 16vh;
+    text-align: center;
+  }
+
+  .manifesto > .head {
+    justify-content: center;
+  }
+
+  .quote {
+    max-width: 52ch;
+    margin: 4vh auto 10vh;
+  }
+
+  .scan {
+    position: relative;
+  }
+
+  .scan p span {
+    display: block;
+  }
+
+  /* Not printed yet: the text is only there as a faint outline on the glass. */
+  .scan-ghost {
+    color: transparent;
+    -webkit-text-stroke: 1px rgb(255 255 255 / 0.22);
+  }
+
+  /* The clipping window: as wide as the section, PAD (60px) above and below the text. */
+  .scan-window {
+    position: absolute;
+    top: -60px;
+    bottom: -60px;
+    left: calc(var(--side) * -1);
+    right: calc(var(--side) * -1);
+    overflow: hidden;
+  }
+
+  /* Same box as the ghost text, so both wrap the same way. */
+  .scan-print {
+    position: absolute;
+    top: 60px;
+    left: var(--side);
+    right: var(--side);
+  }
+
+  .is-live .scan-window,
+  .is-live .scan-print,
+  .is-live .scan-light {
+    will-change: transform;
+  }
+
+  /* Without the script the text is simply printed. */
+  .scan:not(.is-live) .scan-ghost {
+    visibility: hidden;
+  }
+
+  .scan:not(.is-live) .scan-light {
+    display: none;
+  }
+
+  /* The photocopier light: a hard white line, a soft glow, a faint wash above it. */
+  .scan-light {
+    position: absolute;
+    top: 0;
+    left: calc(var(--side) * -1);
+    right: calc(var(--side) * -1);
+    height: 2px;
+    margin-top: -1px;
+    background: var(--white);
+    box-shadow:
+      0 0 18px 4px rgb(255 255 255 / 0.55),
+      0 0 80px 18px rgb(255 255 255 / 0.12);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+
+  .scan-light::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: 90px;
+    background: linear-gradient(to top, rgb(255 255 255 / 0.07), transparent);
+  }
+
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--gutter);
+    margin-top: 16vh;
+    padding-top: 18px;
+    border-top: 1px solid var(--white);
+    text-align: left;
+  }
+
+  .pillars li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px 12px;
+    align-content: start;
+  }
+
+  .pillar-n {
+    font-weight: 400;
+  }
+
+  .pillars :global(.pillar-icon) {
+    justify-self: end;
+    font-size: 30px;
+  }
+
+  .pillar-title,
+  .pillars li p {
+    grid-column: 1 / -1;
+  }
+
+  .pillars li p {
+    max-width: 38ch;
+  }
+
+  @media (max-width: 900px) {
+    .pillars {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+  }
+</style>

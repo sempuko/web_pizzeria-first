@@ -1,0 +1,157 @@
+---
+// Scroll progress, their way: the runner crosses the bottom of the screen as the page goes by.
+// It takes a step for every few pixels scrolled, so it runs while you scroll and stops when you stop,
+// and turns round when you scroll back up. Scroll fast and it leaves afterimages, like a long exposure.
+// Each figure is a window onto the 8-pose sprite strip; poses change by moving the strip (transform),
+// so nothing is repainted while the page scrolls.
+const ghosts = [0.5, 0.3, 0.15];
+---
+
+<div class="runner-track" data-runner aria-hidden="true">
+  {
+    ghosts.map((o) => (
+      <span class="runner-sprite runner-ghost" style={`--o: ${o}`}>
+        <span class="strip" />
+      </span>
+    ))
+  }
+  <span class="runner-sprite runner-main"><span class="strip"></span></span>
+</div>
+
+<script>
+  import { reduce } from '../scripts/scroll';
+  import { spring } from '../scripts/spring';
+
+  const track = document.querySelector<HTMLElement>('[data-runner]');
+  const main = track?.querySelector<HTMLElement>('.runner-main');
+  const mainStrip = main?.querySelector<HTMLElement>('.strip');
+  const ghosts = track ? [...track.querySelectorAll<HTMLElement>('.runner-ghost')] : [];
+
+  if (track && main && mainStrip) {
+    const STRIDE = 34; // px of scroll per pose
+    let lastY = window.scrollY;
+    let facing = 1;
+    let queued = false;
+    let x = 0;
+    let pose = 0;
+    // Sizes are read on resize only, never in the scroll path.
+    let w = 0;
+    let room = 0;
+    let maxScroll = 1;
+    const measure = () => {
+      w = main.offsetWidth;
+      room = track.clientWidth - w;
+      maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    };
+
+    const showPose = (strip: HTMLElement, n: number) => {
+      strip.style.transform = `translate3d(${(-n * w).toFixed(1)}px, 0, 0)`;
+    };
+
+    // Each ghost chases the runner on a looser spring; it shows only while it lags behind.
+    const ghostState = ghosts.map((el, i) => {
+      const strength = Number(el.style.getPropertyValue('--o')) || 0.3;
+      const s = spring(
+        (v) => {
+          const gap = Math.abs(v - x);
+          el.style.transform = `translate3d(${v.toFixed(1)}px, 0, 0) scaleX(${facing})`;
+          el.style.opacity = gap < 6 ? '0' : (Math.min(1, gap / 60) * strength).toFixed(2);
+        },
+        { stiffness: 120 - i * 32, damping: 18 - i * 3 },
+      );
+      return { strip: el.querySelector<HTMLElement>('.strip')!, s, lag: (i + 1) * 2 };
+    });
+
+    const update = () => {
+      queued = false;
+      const y = window.scrollY;
+      const p = Math.min(1, Math.max(0, y / maxScroll));
+      if (y !== lastY) facing = y > lastY ? 1 : -1;
+      lastY = y;
+      x = p * room;
+      pose = reduce.matches ? 0 : Math.floor(y / STRIDE) % 8;
+      main.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0) scaleX(${facing})`;
+      showPose(mainStrip, pose);
+      if (reduce.matches) return;
+      for (const { strip, s, lag } of ghostState) {
+        showPose(strip, (((pose - lag) % 8) + 8) % 8);
+        s.set(x);
+      }
+    };
+    const request = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    window.addEventListener('scroll', request, { passive: true });
+    window.addEventListener('resize', () => {
+      measure();
+      request();
+    });
+    // The page grows as fonts and images arrive: keep the scroll range right.
+    new ResizeObserver(() => {
+      measure();
+      request();
+    }).observe(document.body);
+    measure();
+    update();
+    for (const { s } of ghostState) s.jump(x);
+  }
+</script>
+
+<style>
+  .runner-track {
+    --h: 52px;
+    --w: calc(var(--h) * 1.17);
+    position: fixed;
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: 10px;
+    z-index: 40;
+    height: var(--h);
+    pointer-events: none;
+    mix-blend-mode: difference;
+  }
+
+  .runner-sprite {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    width: var(--w);
+    height: var(--h);
+    overflow: hidden;
+    will-change: transform;
+  }
+
+  .strip {
+    display: block;
+    width: calc(var(--w) * 8);
+    height: 100%;
+    background: url('/img/runner-sprite.png') 0 0 / 100% 100% no-repeat;
+    will-change: transform;
+  }
+
+  .runner-ghost {
+    opacity: 0;
+  }
+
+  /* Out of the way while the loader has the screen. */
+  :global(.is-loading) .runner-track {
+    visibility: hidden;
+  }
+
+  @media (max-width: 720px) {
+    .runner-track {
+      --h: 40px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .runner-ghost {
+      display: none;
+    }
+  }
+</style>

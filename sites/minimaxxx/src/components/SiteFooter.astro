@@ -1,0 +1,207 @@
+---
+// 0013—Reach us. The email pasted edge to edge, and the last page of their deck: a row of runners,
+// one pose each, like a chronophotograph, running as black silhouettes through a band of lit fog.
+// They run only while the footer is on screen.
+import Picto from './Picto.astro';
+import { contact } from '../content/site';
+
+const runners = Array.from({ length: 8 }, (_, i) => i);
+---
+
+<footer id="contact" class="foot on-black grain grain-live" data-foot>
+  <h2 class="head"><span class="n">0013</span>—Reach us</h2>
+
+  <p class="mail-line">
+    <a class="mail" href={`mailto:${contact.email}`} data-fit>{contact.email}</a>
+  </p>
+
+  <ul class="links l">
+    <li><a href={contact.instagram} target="_blank" rel="noopener">Instagram <span class="handle">{contact.handle}</span></a></li>
+    <li><a href={contact.tiktok} target="_blank" rel="noopener">TikTok <span class="handle">{contact.handle}</span></a></li>
+    <li><a href={`mailto:${contact.jobs}`}>Jobs <span class="handle">{contact.jobs}</span></a></li>
+  </ul>
+
+  <div class="fogband" aria-hidden="true">
+    <span class="fogband-light"></span>
+    <div class="chrono">
+      {runners.map((i) => <span class="runner" style={`--f: ${i}`}></span>)}
+    </div>
+    <canvas class="fogband-fog" data-fog></canvas>
+  </div>
+
+  <div class="foot-fine fine">
+    <p>© Minimaxxx 2018—2026 // Worldwide®</p>
+    <p class="foot-pictos" aria-hidden="true"><Picto name="hot" /><Picto name="recycle" /><Picto name="ce" /><Picto name="org" /></p>
+    <p>Maquette de présentation. Contenus issus de sources publiques, à valider par Minimaxxx.</p>
+  </div>
+</footer>
+
+<script>
+  import { fitToWidth } from '../scripts/fit';
+
+  import { initSmoke } from '../scripts/smoke';
+
+  const foot = document.querySelector<HTMLElement>('[data-foot]');
+  if (foot) {
+    const mail = foot.querySelector<HTMLElement>('[data-fit]');
+    if (mail) fitToWidth(mail);
+    const fog = foot.querySelector<HTMLCanvasElement>('[data-fog]');
+    if (fog) initSmoke(fog, { rise: 1.1, strength: 0.7, scale: 0.35, area: foot });
+    new IntersectionObserver(([entry]) => foot.classList.toggle('is-running', entry.isIntersecting)).observe(foot);
+  }
+</script>
+
+<style>
+  .foot {
+    --grain: 0.5;
+    display: flex;
+    flex-direction: column;
+    gap: 6vh;
+    padding: 16vh var(--gutter) 88px;
+  }
+
+  .mail-line {
+    overflow: hidden;
+  }
+
+  .mail {
+    display: inline-block;
+    font-size: 10vw;
+    font-weight: 900;
+    font-stretch: 62.5%;
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+    transition: color 120ms ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mail:hover {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 4px;
+    }
+  }
+
+  .links {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+    gap: 12px 6vw;
+  }
+
+  .links a {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 0;
+  }
+
+  .handle {
+    font-size: var(--fs-s);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  /* A band of lit fog across the footer, full bleed: a white light, the runners in black, fog in front. */
+  .fogband {
+    position: relative;
+    margin: 4vh calc(var(--gutter) * -1) 0;
+    padding: 7vh var(--gutter);
+  }
+
+  .fogband-light {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 55% 50% at 50% 55%, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.25) 55%, rgb(255 255 255 / 0) 100%);
+  }
+
+  .fogband-fog {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    mix-blend-mode: screen;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 75%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 75%, transparent);
+  }
+
+  /* Chronophotograph: eight runners, each one pose further along. The sprite is white: inverted to black. */
+  .chrono {
+    --h: clamp(56px, 9vw, 120px);
+    --w: calc(var(--h) * 1.17);
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .runner {
+    width: var(--w);
+    height: var(--h);
+    background: url('/img/runner-sprite.png') calc(var(--w) * var(--f) * -1) 0 / calc(var(--w) * 8) var(--h) no-repeat;
+    filter: invert(1) blur(0.6px);
+  }
+
+  .is-running .runner {
+    animation: run 640ms steps(8) infinite;
+    animation-delay: calc(var(--f) * -80ms);
+  }
+
+  @keyframes run {
+    from {
+      background-position-x: 0;
+    }
+    to {
+      background-position-x: calc(var(--w) * -8);
+    }
+  }
+
+  .foot-fine {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--white);
+  }
+
+  .foot-fine p:last-child {
+    text-align: right;
+  }
+
+  .foot-pictos {
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 720px) {
+    .links {
+      grid-template-columns: 1fr;
+    }
+
+    .chrono .runner:nth-child(n + 5) {
+      display: none;
+    }
+
+    .foot-fine {
+      grid-template-columns: 1fr;
+    }
+
+    .foot-fine p:last-child {
+      text-align: left;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .is-running .runner {
+      animation: none;
+    }
+  }
+</style>

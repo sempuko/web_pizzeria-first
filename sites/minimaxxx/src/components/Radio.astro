@@ -1,0 +1,384 @@
+---
+// 0010—Radio. Their site is a desktop with a stream window you drag around; this keeps the idea as a small
+// window that follows the visit: stream status (offline, TV static) and the next event. Drag it by its bar,
+// throw it, minimise it to a pill.
+import { tour, contact } from '../content/site';
+
+const last = tour[tour.length - 1];
+---
+
+<aside id="radio" class="radio" data-radio aria-label="Minimaxxx radio" tabindex="-1">
+  <div class="radio-bar" data-radio-handle>
+    <span class="radio-title">Minimaxxx radio</span>
+    <span class="radio-status"><span class="dot"></span>Offline</span>
+    <button class="radio-min" type="button" data-radio-min aria-label="Réduire la fenêtre radio">
+      <span aria-hidden="true"></span>
+    </button>
+  </div>
+  <div class="radio-screen">
+    <canvas width="128" height="72" data-radio-noise aria-hidden="true"></canvas>
+    <p class="radio-msg">Le stream est hors ligne. Reviens au prochain événement ou rejoins-nous en vrai.</p>
+  </div>
+  <dl class="radio-info">
+    <dt>Next event ::</dt>
+    <dd>Annonce sur <a href={contact.instagram} target="_blank" rel="noopener">{contact.handle}</a></dd>
+    <dt>Dernière date ::</dt>
+    <dd>{last.dates} {last.city} — {last.venue}</dd>
+  </dl>
+</aside>
+
+<button class="radio-pill" type="button" data-radio-pill aria-label="Ouvrir la fenêtre radio">
+  <span class="dot"></span>Radio :: offline
+</button>
+
+<script>
+  import { spring } from '../scripts/spring';
+  import { reduce } from '../scripts/scroll';
+
+  const win = document.querySelector<HTMLElement>('[data-radio]');
+  const pill = document.querySelector<HTMLButtonElement>('[data-radio-pill]');
+  const handle = win?.querySelector<HTMLElement>('[data-radio-handle]');
+  const minBtn = win?.querySelector<HTMLButtonElement>('[data-radio-min]');
+  const canvas = win?.querySelector<HTMLCanvasElement>('[data-radio-noise]');
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+
+  if (win && pill && handle && minBtn && canvas) {
+    const root = document.documentElement;
+    const phone = window.matchMedia('(max-width: 720px)');
+    let state: 'hidden' | 'open' | 'min' = 'hidden';
+
+    const setState = (next: typeof state) => {
+      state = next;
+      root.dataset.radioState = next;
+      syncNoise();
+    };
+
+    // It turns up once the hero is behind; on a phone it starts as a pill, to keep the screen free.
+    if (hero) {
+      new IntersectionObserver(
+        ([entry]) => {
+          if (state === 'hidden' && !entry.isIntersecting) setState(phone.matches ? 'min' : 'open');
+        },
+        { threshold: 0.35 },
+      ).observe(hero);
+    } else {
+      setState('open');
+    }
+
+    minBtn.addEventListener('click', () => {
+      setState('min');
+      pill.focus({ preventScroll: true });
+    });
+    pill.addEventListener('click', () => {
+      setState('open');
+      win.focus({ preventScroll: true });
+    });
+    document.addEventListener('mmx:radio-open', () => {
+      setState('open');
+      win.focus({ preventScroll: true });
+    });
+
+    // --- Drag, throw, keep on screen -------------------------------------------------
+    // The window lives at its corner; x/y are offsets from there, driven by springs so a throw keeps its momentum.
+    let x = 0;
+    let y = 0;
+    const paint = () => (win.style.translate = `${x.toFixed(1)}px ${y.toFixed(1)}px`);
+    const sx = spring((v) => ((x = v), paint()), { stiffness: 170, damping: 24 });
+    const sy = spring((v) => ((y = v), paint()), { stiffness: 170, damping: 24 });
+
+    const bounds = () => {
+      const r = win.getBoundingClientRect();
+      const baseLeft = r.left - x;
+      const baseTop = r.top - y;
+      const m = 8;
+      return {
+        minX: m - baseLeft,
+        maxX: window.innerWidth - m - r.width - baseLeft,
+        minY: m - baseTop,
+        maxY: window.innerHeight - m - r.height - baseTop,
+      };
+    };
+    // Past the edge the window still follows, but less and less: it is being held back, not stopped.
+    const rubber = (v: number, min: number, max: number) => {
+      if (v < min) return min - (min - v) * 0.3;
+      if (v > max) return max + (v - max) * 0.3;
+      return v;
+    };
+    const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+    let drag: { id: number; startX: number; startY: number; ox: number; oy: number; b: ReturnType<typeof bounds>; samples: { t: number; x: number; y: number }[] } | null = null;
+
+    handle.addEventListener('pointerdown', (e) => {
+      if (drag || (e.target as HTMLElement).closest('button')) return;
+      handle.setPointerCapture(e.pointerId);
+      drag = { id: e.pointerId, startX: e.clientX, startY: e.clientY, ox: x, oy: y, b: bounds(), samples: [] };
+      win.classList.add('is-dragging');
+    });
+
+    handle.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const { b } = drag;
+      sx.jump(rubber(drag.ox + e.clientX - drag.startX, b.minX, b.maxX));
+      sy.jump(rubber(drag.oy + e.clientY - drag.startY, b.minY, b.maxY));
+      drag.samples.push({ t: e.timeStamp, x: e.clientX, y: e.clientY });
+      if (drag.samples.length > 6) drag.samples.shift();
+    });
+
+    const release = (e: PointerEvent) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const { b, samples } = drag;
+      drag = null;
+      win.classList.remove('is-dragging');
+      // Velocity over the last few moves, in px/s.
+      let vx = 0;
+      let vy = 0;
+      if (samples.length > 1) {
+        const a = samples[0];
+        const z = samples[samples.length - 1];
+        const dt = Math.max(16, z.t - a.t) / 1000;
+        // A flick is a flick: past 2400 px/s more speed only means a wilder overshoot.
+        const cap = (v: number) => Math.max(-2400, Math.min(2400, v));
+        vx = cap((z.x - a.x) / dt);
+        vy = cap((z.y - a.y) / dt);
+      }
+      if (reduce.matches) {
+        sx.jump(clamp(x, b.minX, b.maxX));
+        sy.jump(clamp(y, b.minY, b.maxY));
+        return;
+      }
+      // Project where a flick would carry it, then let the spring take it there with the same momentum.
+      sx.kick(vx);
+      sy.kick(vy);
+      sx.set(clamp(x + vx * 0.16, b.minX, b.maxX));
+      sy.set(clamp(y + vy * 0.16, b.minY, b.maxY));
+    };
+    handle.addEventListener('pointerup', release);
+    handle.addEventListener('pointercancel', release);
+
+    window.addEventListener('resize', () => {
+      const b = bounds();
+      sx.jump(clamp(x, b.minX, b.maxX));
+      sy.jump(clamp(y, b.minY, b.maxY));
+    });
+
+    // --- TV static ---------------------------------------------------------------------
+    // Tiny canvas scaled up with hard pixels, 12 frames a second, only while the window can be seen.
+    const ctx = canvas.getContext('2d')!;
+    const img = ctx.createImageData(canvas.width, canvas.height);
+    const draw = () => {
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = Math.random() * 255;
+        d[i] = d[i + 1] = d[i + 2] = v;
+        d[i + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    };
+    draw();
+    let timer = 0;
+    function syncNoise() {
+      const run = state === 'open' && !document.hidden && !reduce.matches;
+      if (run && !timer) timer = window.setInterval(draw, 1000 / 12);
+      if (!run && timer) {
+        clearInterval(timer);
+        timer = 0;
+      }
+    }
+    document.addEventListener('visibilitychange', syncNoise);
+  }
+</script>
+
+<style>
+  .radio {
+    position: fixed;
+    right: var(--gutter);
+    bottom: 76px;
+    z-index: 50;
+    width: 248px;
+    background: var(--white);
+    color: var(--black);
+    border: 1px solid var(--black);
+    box-shadow: 6px 6px 0 rgb(0 0 0 / 0.9);
+    font-size: max(var(--fs-xs), 10px);
+    font-weight: 700;
+    line-height: 1.25;
+    transform-origin: 100% 100%;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px) scale(0.98);
+    transition:
+      opacity 200ms var(--ease-out),
+      transform 240ms var(--ease-out),
+      visibility 0s 240ms;
+  }
+
+  :global(html[data-radio-state='open']) .radio {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 200ms var(--ease-out),
+      transform 240ms var(--ease-out),
+      visibility 0s;
+  }
+
+  .radio:focus-visible {
+    outline: 2px solid var(--black);
+    outline-offset: 3px;
+  }
+
+  .radio-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 30px;
+    padding: 0 4px 0 10px;
+    border-bottom: 1px solid var(--black);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .is-dragging .radio-bar {
+    cursor: grabbing;
+  }
+
+  .radio-title {
+    flex: 1;
+    font-weight: 800;
+  }
+
+  .radio-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--grey);
+  }
+
+  .radio-min {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 24px;
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .radio-min span {
+    width: 10px;
+    height: 2px;
+    background: currentColor;
+  }
+
+  .radio-min:active {
+    transform: scale(0.92);
+  }
+
+  .radio-screen {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--black);
+    overflow: hidden;
+  }
+
+  .radio-screen canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    opacity: 0.55;
+  }
+
+  /* Scanlines over the static. */
+  .radio-screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.35) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+  }
+
+  .radio-msg {
+    position: absolute;
+    inset: auto 10px 10px;
+    z-index: 1;
+    color: var(--white);
+    text-shadow: 0 0 6px var(--black);
+  }
+
+  .radio-info {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 10px;
+    margin: 0;
+    padding: 10px;
+  }
+
+  .radio-info dd {
+    margin: 0;
+  }
+
+  .radio-info a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .radio-pill {
+    position: fixed;
+    right: var(--gutter);
+    bottom: 76px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 14px;
+    background: var(--white);
+    color: var(--black);
+    border: 1px solid var(--black);
+    font-size: max(var(--fs-xs), 10px);
+    font-weight: 800;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition:
+      opacity 160ms var(--ease-out),
+      transform 200ms var(--ease-out),
+      visibility 0s 200ms;
+  }
+
+  :global(html[data-radio-state='min']) .radio-pill {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 160ms var(--ease-out),
+      transform 200ms var(--ease-out),
+      visibility 0s;
+  }
+
+  .radio-pill:active {
+    transform: scale(0.97);
+  }
+
+  @media (max-width: 720px) {
+    .radio {
+      width: min(280px, calc(100vw - 2 * var(--gutter)));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .radio,
+    :global(html[data-radio-state='open']) .radio,
+    .radio-pill,
+    :global(html[data-radio-state='min']) .radio-pill {
+      transform: none;
+    }
+  }
+</style>

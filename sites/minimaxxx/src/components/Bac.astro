@@ -1,0 +1,437 @@
+---
+// 0004—Stock. The price rule on one side, a live bin on the other: a dark club box, two moving-head beams,
+// fog at the bottom. Clothes fall in with physics; visitors grab them, throw them, dig through the pile, and
+// every piece they pick is rung up on a receipt: the point of the brand, a lot of clothes for very little.
+import { bins } from '../content/site';
+---
+
+<section id="stock" class="stock on-white framed" data-bac-section>
+  <div class="stock-text">
+    <h2 class="head"><span class="n">0004</span>—Stock<span class="tag">[1 €//10 € maxxx]</span></h2>
+    <p class="xl stock-rule">Tout notre stock entre 1 € et 10 € maxxximum.</p>
+
+    <ul class="bins">
+      {
+        bins.map((b) => (
+          <li>
+            <span class="bin-price l">{b.price}</span>
+            <span class="s">{b.label}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="s stock-note">+10 000 pièces par événement, réassort toute la journée.</p>
+  </div>
+
+  <div class="bac">
+    <div class="bac-stage" data-bac aria-hidden="true">
+      <span class="bac-stencil">XXL</span>
+      <!-- Shared fill for the striped pieces -->
+      <svg class="bac-defs" width="0" height="0" aria-hidden="true">
+        <defs>
+          <pattern id="mmx-stripes" width="10" height="10" patternUnits="userSpaceOnUse">
+            <rect width="10" height="10" fill="#fff" />
+            <rect width="10" height="5" fill="#000" />
+          </pattern>
+        </defs>
+      </svg>
+      <!-- Over the pile: the beams, the fog, the labels -->
+      <div class="bac-over" data-bac-over>
+        <span class="beam beam-a" data-beam></span>
+        <span class="beam beam-b" data-beam></span>
+        <canvas class="bac-fog" data-bac-fog></canvas>
+        <p class="bac-label fine">&gt; Bac XXL &lt;<br />1 €—10 € maxxx</p>
+        <p class="bac-count fine" data-bac-count>Restock #0000 :: 0 pièces dans le bac</p>
+      </div>
+    </div>
+
+    <div class="bac-controls">
+      <div class="ticket" data-ticket>
+        <p class="t-head fine"><span>Ticket :: Minimaxxx</span><span>Seconde main</span></p>
+        <ol class="t-lines s" data-ticket-lines aria-live="polite"></ol>
+        <p class="t-empty s">Attrape une pièce dans le bac : elle passe en caisse.</p>
+        <p class="t-total"><span class="s" data-ticket-count>0 pièce</span><span class="t-sum">Total <b data-ticket-total>0 €</b><small class="t-free" data-ticket-free hidden>+ prix libre</small></span></p>
+      </div>
+      <div class="bac-side">
+        <div class="bac-buttons">
+          <button class="btn btn-solid" type="button" data-bac-restock>Restock</button>
+          <button class="btn" type="button" data-bac-shake>Fouiller</button>
+        </div>
+        <p class="fine bac-hint">Attrape, secoue, lance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initBac } from '../scripts/bac';
+  import { initSmoke } from '../scripts/smoke';
+
+  const section = document.querySelector<HTMLElement>('[data-bac-section]');
+  if (section) {
+    initBac(section);
+    const fog = section.querySelector<HTMLCanvasElement>('[data-bac-fog]');
+    const stage = section.querySelector<HTMLElement>('[data-bac]');
+    if (fog && stage) initSmoke(fog, { rise: 0.55, strength: 0.8, scale: 0.4, area: stage });
+  }
+</script>
+
+<style>
+  .stock {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 40px var(--gutter);
+    padding-block: 16vh 14vh;
+  }
+
+  .stock-text {
+    grid-column: 1 / span 5;
+    display: flex;
+    flex-direction: column;
+    gap: 6vh;
+  }
+
+  .stock-rule {
+    max-width: 9em;
+  }
+
+  .bins {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 20px;
+  }
+
+  .bins li {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: baseline;
+    padding: 10px 0;
+    border-top: 1px solid var(--black);
+  }
+
+  .bins li:last-child {
+    border-bottom: 1px solid var(--black);
+  }
+
+  .bin-price {
+    white-space: nowrap;
+  }
+
+  .stock-note {
+    font-weight: 500;
+  }
+
+  .bac {
+    grid-column: 6 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* The bin: a black box, open at the top, lit like a club floor. */
+  .bac-stage {
+    position: relative;
+    isolation: isolate;
+    height: min(78svh, 760px);
+    background: var(--black);
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .bac-over {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  /* Moving heads: a cone of light from the top edge, soft at the sides, fading toward the floor. */
+  .beam {
+    position: absolute;
+    top: -1%;
+    width: 52%;
+    height: 135%;
+    transform-origin: 50% 0;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.16) 55%, rgb(255 255 255 / 0));
+    clip-path: polygon(47% 0, 53% 0, 100% 100%, 0 100%);
+    filter: blur(5px);
+    mix-blend-mode: screen;
+    will-change: rotate;
+  }
+
+  .beam-a {
+    left: 4%;
+    rotate: 14deg;
+  }
+
+  .beam-b {
+    right: 4%;
+    rotate: -16deg;
+    opacity: 0.7;
+  }
+
+  .bac-fog {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    mix-blend-mode: screen;
+  }
+
+  .bac-label,
+  .bac-count {
+    position: absolute;
+    top: 14px;
+    color: var(--white);
+  }
+
+  .bac-label {
+    left: 16px;
+  }
+
+  .bac-count {
+    right: 16px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bac-stencil {
+    position: absolute;
+    left: 50%;
+    bottom: 4%;
+    transform: translateX(-50%);
+    font-size: clamp(6rem, 18vw, 17rem);
+    font-weight: 900;
+    font-stretch: 125%;
+    line-height: 0.75;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.22);
+    pointer-events: none;
+  }
+
+  .bac-defs {
+    position: absolute;
+  }
+
+  .bac-stage :global(.item) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: grab;
+    touch-action: none;
+    will-change: transform;
+    transition: opacity 160ms ease;
+  }
+
+  .bac-stage :global(.item.is-held) {
+    cursor: grabbing;
+    z-index: 2;
+  }
+
+  .bac-stage :global(.item.is-gone) {
+    opacity: 0;
+  }
+
+  .bac-stage :global(.item svg) {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .bac-stage :global(.fill-outline svg) {
+    fill: var(--black);
+    stroke: var(--white);
+    stroke-width: 2px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .bac-stage :global(.fill-stripe svg) {
+    fill: url(#mmx-stripes);
+    stroke: var(--black);
+    stroke-width: 2.5px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .bac-stage :global(.fill-paper svg) {
+    fill: var(--white);
+    stroke: var(--black);
+    stroke-width: 2.5px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Price tag: punched card on a string, priced by hand. */
+  .bac-stage :global(.price) {
+    position: absolute;
+    top: 6%;
+    right: -6%;
+    padding: 1px 7px 0 12px;
+    background: var(--white);
+    border: 1.5px solid var(--black);
+    font-size: clamp(15px, 1.6vw, 22px);
+    line-height: 1.1;
+    color: var(--black);
+    white-space: nowrap;
+    transform: rotate(8deg);
+    pointer-events: none;
+  }
+
+  /* Rung up: the tag turns black. */
+  .bac-stage :global(.is-picked .price) {
+    background: var(--black);
+    color: var(--white);
+    border-color: var(--white);
+  }
+
+  .bac-stage :global(.price)::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    margin-top: -2px;
+    border: 1.5px solid var(--black);
+    border-radius: 50%;
+  }
+
+  .bac-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px var(--gutter);
+    align-items: start;
+  }
+
+  /* Till receipt: thermal paper, a torn zigzag edge, lines printed one by one. */
+  .ticket {
+    max-width: 420px;
+    padding: 12px 14px 18px;
+    background: var(--white);
+    border: 1px solid var(--black);
+    border-bottom: 0;
+    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 12px 100%;
+    mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 12px 100%;
+  }
+
+  .t-head {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--black);
+  }
+
+  .t-lines :global(li) {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 8px;
+    padding: 4px 0 2px;
+    animation: print 220ms var(--ease-out);
+  }
+
+  @keyframes print {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  .t-lines :global(.t-dots) {
+    border-bottom: 2px dotted var(--black);
+  }
+
+  .t-lines :global(.t-price) {
+    font-weight: 800;
+  }
+
+  .t-empty {
+    padding: 8px 0 2px;
+    font-weight: 500;
+  }
+
+  .has-items .t-empty {
+    display: none;
+  }
+
+  .t-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--black);
+  }
+
+  .t-free {
+    margin-left: 0.4em;
+    font-size: var(--fs-s);
+    font-weight: 700;
+    font-stretch: 100%;
+    letter-spacing: 0;
+  }
+
+  .t-sum {
+    white-space: nowrap;
+    font-size: var(--fs-l);
+    font-weight: 900;
+    font-stretch: 70%;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .bac-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  .bac-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .bac-hint {
+    font-weight: 500;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .t-lines :global(li) {
+      animation: none;
+    }
+  }
+
+  @media (pointer: coarse) {
+    /* On a phone a vertical swipe over the bin still scrolls the page; a sideways one grabs. */
+    .bac-stage :global(.item) {
+      touch-action: pan-y;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .stock-text,
+    .bac {
+      grid-column: 1 / -1;
+    }
+
+    .bac-stage {
+      height: 64svh;
+    }
+
+    .bac-controls {
+      grid-template-columns: 1fr;
+    }
+
+    .bac-side {
+      align-items: flex-start;
+    }
+
+    .bac-count {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import Loader from '../components/Loader.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Menu from '../components/Menu.astro';
+import Hero from '../components/Hero.astro';
+import Tape from '../components/Tape.astro';
+import Manifesto from '../components/Manifesto.astro';
+import Bac from '../components/Bac.astro';
+import Tour from '../components/Tour.astro';
+import Archive from '../components/Archive.astro';
+import Guests from '../components/Guests.astro';
+import Artists from '../components/Artists.astro';
+import Partners from '../components/Partners.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import Radio from '../components/Radio.astro';
+import Runner from '../components/Runner.astro';
+---
+
+<Base
+  title="Minimaxxx, friperie + DJ-sets + designers"
+  description="Friperie événementielle en tournée : +10 000 pièces de seconde main entre 1 € et 10 €, des jeunes designers et des DJ-sets. Entrée libre."
+>
+  <Loader />
+  <SiteHeader />
+  <main>
+    <Hero />
+    <Tape />
+    <Manifesto />
+    <Bac />
+    <Tour />
+    <Archive />
+    <Guests />
+    <Artists />
+    <Partners />
+  </main>
+  <SiteFooter />
+  <Radio />
+  <Runner />
+  <Menu />
+</Base>
+
+<script>
+  import { scrambleHeads } from '../scripts/glitch';
+
+  // Section titles decode from noise the first time they come into view.
+  scrambleHeads();
+</script>

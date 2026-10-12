@@ -1,0 +1,222 @@
+---
+// 0012—Partnerships, 0003—Formats. For venues, shopping centres and brands: figures set like a spec sheet,
+// the formats, the places that have hosted an edition, one way to get in touch.
+import Picto from './Picto.astro';
+import { figures, formats, venues, contact } from '../content/site';
+
+const formatIcons = ['recycle', 'globe', 'ce', 'hot'] as const;
+---
+
+<section id="partners" class="partners on-white">
+  <h2 class="head"><span class="n">0012</span>—Partnerships<span class="tag">[Venues//Brands]</span></h2>
+  <p class="giant partners-title">Accueillez le prochain Minimaxxx.</p>
+
+  <dl class="spec">
+    {
+      figures.map((f) => (
+        <div class="spec-row">
+          <dt class="xl">{f.value}</dt>
+          <dd class="s">{f.label}</dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <div class="split">
+    <div class="formats">
+      <h3 class="head"><span class="n">0003</span>—Formats</h3>
+      <ul>
+        {
+          formats.map((f, i) => (
+            <li>
+              <Picto name={formatIcons[i]} class="format-icon" />
+              <span class="l">{f.name}</span>
+              <span class="s">{f.text}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="venues">
+      <h3 class="s venues-title">Ils ont accueilli Minimaxxx</h3>
+      <ul>
+        {
+          venues.map((v) => (
+            <li class="venue">
+              <span class="venue-name">{v.name}</span>
+              <span class="venue-city s">{v.city}</span>
+              <span class="venue-kind fine">{v.kind}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="partners-cta">
+    <p class="l">Un lieu, une marque, un centre commercial, une ville ?</p>
+    <a class="btn btn-solid" href={`mailto:${contact.email}?subject=${encodeURIComponent('Partenariat Minimaxxx')}`}>
+      Écrire à {contact.email}
+    </a>
+  </div>
+</section>
+
+<style>
+  .partners {
+    padding: 16vh var(--gutter) 14vh;
+  }
+
+  .partners-title {
+    max-width: 8.5em;
+    margin: 5vh 0 10vh;
+  }
+
+  /* Spec sheet: value, dotted leader, label. */
+  .spec {
+    border-top: 2px solid var(--black);
+  }
+
+  .spec-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 16px;
+    padding: 14px 0 12px;
+    border-bottom: 1px solid var(--black);
+  }
+
+  .spec-row::after {
+    content: '';
+    order: 1;
+    align-self: center;
+    border-bottom: 2px dotted var(--black);
+  }
+
+  .spec-row dt {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .spec-row dd {
+    order: 2;
+    text-align: right;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 64px var(--gutter);
+    margin-top: 14vh;
+  }
+
+  .formats {
+    grid-column: 1 / span 5;
+  }
+
+  .formats ul {
+    margin-top: 32px;
+  }
+
+  .formats li {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 6px 14px;
+    padding: 16px 0;
+    border-top: 1px solid var(--black);
+  }
+
+  .formats :global(.format-icon) {
+    grid-row: span 2;
+    font-size: 28px;
+    margin-top: 2px;
+  }
+
+  .formats li .s {
+    max-width: 40ch;
+    font-weight: 500;
+  }
+
+  .venues {
+    grid-column: 7 / -1;
+  }
+
+  .venues-title {
+    padding-bottom: 12px;
+  }
+
+  .venues ul {
+    isolation: isolate;
+  }
+
+  .venue {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.9fr 1fr 0.9fr;
+    align-items: baseline;
+    gap: 12px;
+    padding: 9px 4px 7px;
+    border-top: 1px solid var(--black);
+  }
+
+  .venue:last-child {
+    border-bottom: 1px solid var(--black);
+  }
+
+  .venue-name {
+    font-size: clamp(1.4rem, 2.5vw, 2.5rem);
+    font-weight: 850;
+    font-stretch: 70%;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+  }
+
+  .venue-kind {
+    text-align: right;
+  }
+
+  /* Hover: a white bar in difference mode wipes in, the row reads white on black. */
+  .venue::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--white);
+    mix-blend-mode: difference;
+    pointer-events: none;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 200ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .venue:hover::after {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  .partners-cta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 24px var(--gutter);
+    margin-top: 14vh;
+  }
+
+  .partners-cta .l {
+    max-width: 18em;
+  }
+
+  @media (max-width: 900px) {
+    .formats,
+    .venues {
+      grid-column: 1 / -1;
+    }
+
+    .venue {
+      grid-template-columns: 1fr auto;
+    }
+
+    .venue-kind {
+      display: none;
+    }
+  }
+</style>

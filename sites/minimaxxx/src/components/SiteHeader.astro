@@ -1,0 +1,90 @@
+---
+import { index } from '../content/site';
+---
+
+<a class="skip" href="#manifesto">Aller au contenu</a>
+
+<!-- Difference blend: white over black pages, black over white ones, with no background of its own -->
+<header class="site-header">
+  <a class="brand" href="#top" aria-label="Minimaxxx, haut de page">
+    <img src="/img/wordmark-white.png" alt="" width="2400" height="306" />
+  </a>
+  <p class="clock fine" data-clock aria-hidden="true"></p>
+  <button class="menu-btn s" type="button" data-menu-open aria-expanded="false" aria-controls="menu">
+    Index<span class="count">({String(index.length).padStart(2, '0')})</span>
+  </button>
+</header>
+
+<script>
+  // Their site shows the day and the time; here it is Paris time, to the second.
+  const clock = document.querySelector<HTMLElement>('[data-clock]');
+  if (clock) {
+    const day = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', weekday: 'long' });
+    const date = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', year: '2-digit' });
+    const time = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const tick = () => {
+      const now = new Date();
+      clock.textContent = `${day.format(now)} ${date.format(now).replaceAll('/', '.')} :: ${time.format(now)} Paris`;
+      setTimeout(tick, 1000 - (Date.now() % 1000));
+    };
+    tick();
+  }
+</script>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 14px var(--gutter);
+    color: var(--white);
+    mix-blend-mode: difference;
+    pointer-events: none;
+  }
+
+  .site-header > * {
+    pointer-events: auto;
+  }
+
+  .brand {
+    justify-self: start;
+    display: block;
+    width: clamp(118px, 11vw, 168px);
+    padding: 10px 0;
+  }
+
+  .clock {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .menu-btn {
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    min-height: 44px;
+    padding: 0 2px;
+    font-weight: 800;
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .menu-btn:active {
+    transform: scale(0.97);
+  }
+
+  .count {
+    font-size: 0.75em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 720px) {
+    .clock {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,178 @@
+---
+// 0005—Guests, set like a rave flyer: each name at its own width, pasted edge to edge,
+// spiky stars from the deck turning as the page scrolls. The last line is an empty slot: the next designer.
+import Picto from './Picto.astro';
+import { designers, contact } from '../content/site';
+
+// Width and weight per line, so no two names look alike.
+const looks = [
+  { w: 125, g: 900 },
+  { w: 62, g: 800 },
+  { w: 100, g: 300 },
+  { w: 70, g: 900 },
+];
+const stars = [
+  { x: 8, y: 14, s: 9, r: 10 },
+  { x: 86, y: 6, s: 14, r: -20 },
+  { x: 72, y: 38, s: 6, r: 35 },
+  { x: 4, y: 58, s: 12, r: -8 },
+  { x: 90, y: 66, s: 8, r: 50 },
+  { x: 40, y: 88, s: 10, r: -30 },
+];
+const mail = (subject: string) => `mailto:${contact.email}?subject=${encodeURIComponent(subject)}`;
+---
+
+<section id="guests" class="guests on-black grain grain-live" data-guests>
+  <div class="guests-heads">
+    <h2 class="head"><span class="n">0005</span>—Guests<span class="tag">[Fashion//Design]</span></h2>
+  </div>
+
+  <div class="flyer">
+    {stars.map((s) => <span class="star" style={`left:${s.x}%; top:${s.y}%; --s:${s.s}vw; --r:${s.r}deg`}><Picto name="star" /></span>)}
+
+    <ul class="names">
+      {
+        designers.map((name, i) => (
+          <li class="line">
+            <span class="name" data-fit style={`font-variation-settings: "wdth" ${looks[i % looks.length].w}, "wght" ${looks[i % looks.length].g}`}>
+              {name}
+            </span>
+          </li>
+        ))
+      }
+      <li class="line">
+        <span class="name name-you" data-fit>+ ton nom ?</span>
+      </li>
+    </ul>
+    <p class="fine flyer-note">Designers invités en 2026, à Reims et à Dijon.</p>
+  </div>
+
+  <div class="calls">
+    <p class="l">Designers, curateurs : un stand au prochain Minimaxxx ?</p>
+    <p class="s">Un espace pour exposer, présenter et vendre tes pièces, et rencontrer le public en vrai.</p>
+    <a class="btn" href={mail('Stand designer')}>Proposer ma marque</a>
+  </div>
+</section>
+
+<script>
+  import { fitToWidth } from '../scripts/fit';
+  import { reduce } from '../scripts/scroll';
+
+  const section = document.querySelector<HTMLElement>('[data-guests]');
+  if (section) {
+    section.querySelectorAll<HTMLElement>('[data-fit]').forEach((el) => fitToWidth(el));
+
+    // The stars turn with the scroll, not on their own.
+    const stars = [...section.querySelectorAll<HTMLElement>('.star')];
+    if (!reduce.matches) {
+      let queued = false;
+      const update = () => {
+        queued = false;
+        const r = section.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > window.innerHeight) return;
+        const p = (window.innerHeight - r.top) / (window.innerHeight + r.height);
+        stars.forEach((s, i) => {
+          s.style.rotate = `${(p * (i % 2 ? -220 : 260)).toFixed(1)}deg`;
+        });
+      };
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (!queued) {
+            queued = true;
+            requestAnimationFrame(update);
+          }
+        },
+        { passive: true },
+      );
+      update();
+    }
+  }
+</script>
+
+<style>
+  .guests {
+    --grain: 0.45;
+    padding: 16vh var(--gutter) 14vh;
+  }
+
+  .guests-heads {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px var(--gutter);
+  }
+
+  .flyer {
+    position: relative;
+    margin: 10vh 0 6vh;
+  }
+
+  .names {
+    position: relative;
+    z-index: 1;
+  }
+
+  .line {
+    display: block;
+    overflow: hidden;
+  }
+
+  .name {
+    display: inline-block;
+    font-size: 12vw;
+    font-weight: 900;
+    line-height: 0.82;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+
+  .name-you {
+    font-variation-settings:
+      'wdth' 62,
+      'wght' 900;
+    color: transparent;
+    -webkit-text-stroke: max(2px, 0.012em) var(--white);
+  }
+
+  .flyer-note {
+    margin-top: 18px;
+  }
+
+  .star {
+    position: absolute;
+    z-index: 2;
+    width: var(--s);
+    min-width: 34px;
+    translate: -50% -50%;
+    transform: rotate(var(--r));
+    color: var(--white);
+    pointer-events: none;
+    mix-blend-mode: difference;
+  }
+
+  .star :global(.picto) {
+    width: 100%;
+    height: auto;
+  }
+
+  .calls {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr auto;
+    align-items: end;
+    gap: 18px var(--gutter);
+    padding-top: 18px;
+    border-top: 1px solid var(--white);
+  }
+
+  .calls .s {
+    max-width: 44ch;
+  }
+
+  @media (max-width: 900px) {
+    .calls {
+      grid-template-columns: 1fr;
+      justify-items: start;
+    }
+  }
+</style>

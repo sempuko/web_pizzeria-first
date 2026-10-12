@@ -1,0 +1,116 @@
+---
+// Two bands of barrier tape crossed over the cut between the hero and the manifesto, one black, one white.
+// They run on their own, and speed up with the scroll, in opposite directions.
+const text = ['Friperie [stock XXL]', 'DJ-sets', 'Designers', '1 €—10 € maxxx', 'Entrée libre', 'Worldwide tour 2026', 'Second-hand only®'];
+const run = text.map((t) => `${t} :: `).join('');
+---
+
+<div class="tapes" data-tapes aria-hidden="true">
+  <div class="tape tape-white" data-tape="1">
+    <div class="tape-track"><span>{run}</span><span>{run}</span><span>{run}</span></div>
+  </div>
+  <div class="tape tape-black" data-tape="-1">
+    <div class="tape-track"><span>{run}</span><span>{run}</span><span>{run}</span></div>
+  </div>
+</div>
+
+<script>
+  import { reduce, whileVisible } from '../scripts/scroll';
+
+  const root = document.querySelector<HTMLElement>('[data-tapes]');
+  if (root && !reduce.matches) {
+    const tapes = [...root.querySelectorAll<HTMLElement>('[data-tape]')].map((tape) => ({
+      track: tape.querySelector<HTMLElement>('.tape-track')!,
+      chunk: tape.querySelector<HTMLElement>('.tape-track span')!,
+      dir: Number(tape.dataset.tape),
+      x: 0,
+      w: 0,
+    }));
+    // Widths are read on resize and once the font is in, never inside the animation loop.
+    const measure = () => tapes.forEach((t) => (t.w = t.chunk.offsetWidth));
+    measure();
+    document.fonts.ready.then(measure);
+    window.addEventListener('resize', measure);
+
+    // Scroll speed is turned into a boost that decays, so the tape surges and settles back.
+    let boost = 0;
+    let lastY = window.scrollY;
+    window.addEventListener(
+      'scroll',
+      () => {
+        const dy = window.scrollY - lastY;
+        lastY = window.scrollY;
+        boost = Math.max(-28, Math.min(28, boost + dy * 0.12));
+      },
+      { passive: true },
+    );
+
+    let last = performance.now();
+    // The wrapper has no height; watch a tape. dt is capped, so a pause never makes the tape jump.
+    whileVisible(
+      root.querySelector('.tape')!,
+      (now) => {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        boost *= 0.92;
+        for (const t of tapes) {
+          const w = t.w;
+          if (!w) continue;
+          t.x -= t.dir * (60 + Math.abs(boost) * 30) * dt;
+          // Keep x within one chunk, so the three copies always cover the screen.
+          t.x = ((t.x % w) - w) % w;
+          t.track.style.transform = `translate3d(${t.x.toFixed(1)}px, 0, 0)`;
+        }
+      },
+      '200px',
+    );
+  }
+</script>
+
+<style>
+  .tapes {
+    position: relative;
+    z-index: 5;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .tape {
+    position: absolute;
+    left: -10vw;
+    width: 120vw;
+    top: 0;
+    padding: 0.55em 0 0.5em;
+    font-size: clamp(13px, 1.25vw, 18px);
+    font-weight: 900;
+    font-stretch: 75%;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .tape-white {
+    background: var(--white);
+    color: var(--black);
+    border-block: 2px solid var(--black);
+    transform: translateY(-50%) rotate(-2.2deg);
+  }
+
+  .tape-black {
+    background: var(--black);
+    color: var(--white);
+    border-block: 2px solid var(--white);
+    transform: translateY(-50%) rotate(1.8deg);
+  }
+
+  .tape-track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+  }
+
+  .tape-track span {
+    padding-right: 0.3em;
+  }
+</style>

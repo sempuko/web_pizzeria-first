@@ -1,0 +1,23 @@
+---
+import { pictos, type PictoName } from '../lib/pictos';
+
+interface Props {
+  name: PictoName;
+  class?: string;
+  /** Accessible name. Without one the pictogram is decorative. */
+  label?: string;
+}
+
+const { name, class: className, label } = Astro.props;
+const picto = pictos[name];
+---
+
+<svg
+  class:list={['picto', className]}
+  viewBox={picto.viewBox}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  focusable="false"
+  set:html={picto.body}
+/>

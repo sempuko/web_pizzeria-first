@@ -1,0 +1,481 @@
+---
+// 0001. Their Instagram, as a first screen: a figure in club fog, backlit, and the name glowing under it.
+// The name is its own scale: MINI prices, MAXXX everything else. The word arrives thin and compressed (mini)
+// and inflates to fill the frame; the pointer moves the weight between the two halves and parts the fog.
+// Now and then the frame tears (glitch) and the light stutters with it.
+// On a phone the halves stack, each one fitted to the width: the weight then moves height from one line to the other.
+import Picto from './Picto.astro';
+import { manifesto } from '../content/site';
+
+const halves = ['MINI', 'MAXXX'];
+---
+
+<section id="top" class="hero on-black grain framed" data-hero>
+  <div class="hero-meta s" data-hero-late>
+    <p>One rule : second-hand only®<br />+10 000 pièces : 10 € maxxx</p>
+    <p class="hero-pictos" aria-hidden="true">
+      <Picto name="hot" />
+      <Picto name="recycle" />
+      <Picto name="ce" />
+    </p>
+    <p class="hero-meta-r">// Worldwide :: 2018—2026®</p>
+    <Picto name="org" class="hero-org" label="ORG" />
+  </div>
+
+  <div class="stage" data-stage aria-hidden="true">
+    <span class="stage-light" data-light></span>
+    <span class="stage-figure" data-figure></span>
+    <canvas class="stage-fog" data-fog></canvas>
+    <span class="stage-grid"></span>
+    <p class="stage-tag fine">&gt; Second-hand only &lt;</p>
+    <p class="stage-corner tl fine">Friperie<br />[Stock XXL]</p>
+    <p class="stage-corner tr fine">DJ-sets<br />+ designers</p>
+  </div>
+
+  <h1 class="mm glow" data-mm aria-label="Minimaxxx">
+    {
+      halves.map((h) => (
+        <span class="half" data-half aria-hidden="true">
+          {h.split('').map((c) => (
+            <span>{c}</span>
+          ))}
+        </span>
+      ))
+    }
+  </h1>
+
+  <div class="hero-under" data-hero-late>
+    <p class="l hero-what">Friperie [stock XXL] + DJ-sets + designers</p>
+    <p class="s hero-text">
+      Une friperie qui part en tournée. +10 000 pièces de seconde main entre 1 € et 10 €, des jeunes designers, des DJ aux platines.
+      Entrée libre.
+    </p>
+    <a class="btn btn-solid hero-cta" href="#tour">Voir le tour 2026</a>
+  </div>
+
+  <p class="fine hero-fine" data-hero-late>{manifesto.finePrint}</p>
+</section>
+
+<script>
+  import { spring } from '../scripts/spring';
+  import { reduce, finePointer, whenReady, whileVisible } from '../scripts/scroll';
+  import { initSmoke } from '../scripts/smoke';
+  import { glitch, glitchEvery } from '../scripts/glitch';
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  const word = hero?.querySelector<HTMLElement>('[data-mm]');
+  const figure = hero?.querySelector<HTMLElement>('[data-figure]');
+  const light = hero?.querySelector<HTMLElement>('[data-light]');
+  const fog = hero?.querySelector<HTMLCanvasElement>('[data-fog]');
+
+  if (hero && fog) {
+    const phone = window.matchMedia('(max-width: 720px)').matches;
+    initSmoke(fog, { rise: 1.05, strength: 0.85, scale: phone ? 0.3 : 0.42, area: hero });
+  }
+
+  if (hero && word) {
+    const halves = [...word.querySelectorAll<HTMLElement>('[data-half]')];
+    const letters = halves.flatMap((h) => [...h.children] as HTMLElement[]);
+    const half = letters.map((el) => halves.indexOf(el.parentElement!)); // 0 = MINI, 1 = MAXXX
+    const stacked = window.matchMedia('(max-width: 720px)');
+
+    // Balance b in [-1, 1]: -1 gives all the weight to MINI, 1 to MAXXX.
+    const W = [62, 125];
+    const G = [300, 900];
+    const REST = 0.42;
+    const share = (h: number, b: number) => (h ? (b + 1) / 2 : (1 - b) / 2);
+    const lerp = (a: number, z: number, t: number) => a + (z - a) * t;
+
+    // Width of each half per em for a range of balances, measured once the font is in.
+    // The fit then needs no layout read per frame.
+    const STEPS = 20;
+    let tables: number[][] = [[], []];
+    const setLetters = (b: number, grow: number[] | null) => {
+      letters.forEach((el, i) => {
+        const t = share(half[i], b);
+        const p = grow ? grow[i] : 1;
+        const w = lerp(62, lerp(W[0], W[1], t), p);
+        const g = lerp(100, lerp(G[0], G[1], t), p);
+        el.style.fontVariationSettings = `"wdth" ${w.toFixed(1)}, "wght" ${g.toFixed(0)}`;
+      });
+    };
+    const measure = () => {
+      halves.forEach((h) => (h.style.fontSize = '100px'));
+      tables = [[], []];
+      for (let s = 0; s <= STEPS; s++) {
+        setLetters(-1 + (2 * s) / STEPS, null);
+        halves.forEach((h, i) => tables[i].push(h.scrollWidth / 100));
+      }
+    };
+    const emWidth = (h: number, b: number) => {
+      const x = ((b + 1) / 2) * STEPS;
+      const i = Math.min(STEPS - 1, Math.floor(x));
+      return lerp(tables[h][i], tables[h][i + 1], x - i);
+    };
+    let available = 0;
+    const readAvailable = () => {
+      const style = getComputedStyle(hero);
+      available = hero.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    };
+
+    // State, painted once per frame from whatever springs moved.
+    let balance = REST;
+    const grow = letters.map(() => 0);
+    let queued = false;
+    const paint = () => {
+      queued = false;
+      if (!tables[0].length) return;
+      setLetters(balance, grow);
+      if (stacked.matches) {
+        halves.forEach((h, i) => (h.style.fontSize = `${(available / emWidth(i, balance)).toFixed(2)}px`));
+      } else {
+        const size = `${(available / (emWidth(0, balance) + emWidth(1, balance))).toFixed(2)}px`;
+        halves.forEach((h) => (h.style.fontSize = size));
+      }
+      // The figure in the fog leans toward whichever half is winning.
+      if (figure) figure.style.translate = `${(balance * 2.2).toFixed(2)}% 0`;
+    };
+    const request = () => {
+      if (!queued) {
+        queued = true;
+        queueMicrotask(paint);
+      }
+    };
+
+    const b = spring((v) => ((balance = v), request()), { stiffness: 70, damping: 14 });
+    const growers = letters.map((_, i) => spring((v) => ((grow[i] = v), request()), { stiffness: 180, damping: 17 }));
+
+    // A glitch tears the word and makes the backlight stutter, like a strobe catching a bad frame.
+    const tear = () => {
+      glitch(word);
+      // A soft dip, not a strobe: the first screen should stay easy on the eyes.
+      light?.animate([{ opacity: 1 }, { opacity: 0.72 }, { opacity: 1 }], { duration: 260, easing: 'ease-out' });
+    };
+
+    const settle = () => {
+      b.jump(REST);
+      growers.forEach((g) => g.jump(1));
+      hero.classList.add('is-in');
+    };
+
+    document.fonts.ready.then(() => {
+      readAvailable();
+      measure();
+      paint();
+      new ResizeObserver(() => {
+        readAvailable();
+        paint();
+      }).observe(hero);
+
+      if (reduce.matches) {
+        settle();
+        return;
+      }
+
+      b.jump(REST);
+      whenReady(() => {
+        // The orchestrated moment: letters inflate one after another, a first tear, then the rest shows up.
+        growers.forEach((g, i) => setTimeout(() => g.set(1), 90 + i * 55));
+        const done = 90 + letters.length * 55 + 120;
+        setTimeout(() => hero.classList.add('is-in'), done);
+        setTimeout(tear, done + 260);
+        setTimeout(() => glitchEvery(word, 9000, 16000), done + 600);
+      });
+
+      word.addEventListener('pointerdown', tear);
+
+      // Every change of width re-lays out and repaints a huge glowing word: fine when it is the show,
+      // too heavy while the page scrolls. So the word freezes during a scroll, and only breathes
+      // when the hero is mostly on screen.
+      let scrolling = false;
+      let scrollIdle = 0;
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (!scrolling) {
+            scrolling = true;
+            b.jump(balance);
+          }
+          clearTimeout(scrollIdle);
+          scrollIdle = window.setTimeout(() => (scrolling = false), 220);
+        },
+        { passive: true },
+      );
+      let inView = true;
+      new IntersectionObserver(([entry]) => (inView = entry.intersectionRatio >= 0.6), { threshold: [0, 0.6] }).observe(hero);
+
+      // Pointer moves the weight between MINI and MAXXX. Without a pointer, the word breathes slowly.
+      let pointerInside = false;
+      hero.addEventListener('pointermove', (e) => {
+        if (!finePointer.matches || scrolling) return;
+        pointerInside = true;
+        const r = hero.getBoundingClientRect();
+        b.set(Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2.4 - 1.2)));
+      });
+      hero.addEventListener('pointerleave', () => {
+        pointerInside = false;
+      });
+
+      const start = performance.now();
+      whileVisible(hero, (now) => {
+        if (pointerInside || scrolling || !inView || !hero.classList.contains('is-in')) return;
+        b.set(REST + 0.38 * Math.sin(((now - start) / 7000) * Math.PI * 2));
+      });
+    });
+  }
+</script>
+
+<style>
+  .hero {
+    --grain: 0.2;
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto minmax(34svh, 1fr) auto auto auto;
+    padding-top: calc(var(--gutter) + 72px);
+    /* Room for the barrier tapes crossing the bottom edge. */
+    padding-bottom: calc(var(--gutter) + 44px);
+    text-align: center;
+  }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: 1fr auto auto 1fr;
+    gap: 12px 28px;
+    align-items: start;
+    text-align: left;
+  }
+
+  .hero-pictos {
+    display: flex;
+    gap: 10px;
+    font-size: 18px;
+  }
+
+  .hero-meta-r {
+    text-align: right;
+  }
+
+  .hero-meta :global(.hero-org) {
+    grid-column: 3;
+    grid-row: 1;
+    font-size: 26px;
+    margin-top: -4px;
+  }
+
+  .hero-meta-r {
+    grid-column: 4;
+  }
+
+  /* ---- The stage: backlight, a figure, fog in front of it, a technical grid. ---- */
+
+  .stage {
+    position: relative;
+    margin: 3vh 0 0;
+    pointer-events: none;
+  }
+
+  /* The light behind the fog: a hot core, a wide halo. Breathes slowly. */
+  .stage-light {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: 120%;
+    aspect-ratio: 2.1;
+    translate: -50% -50%;
+    background: radial-gradient(
+      closest-side,
+      rgb(255 255 255 / 1),
+      rgb(255 255 255 / 0.85) 18%,
+      rgb(255 255 255 / 0.38) 46%,
+      rgb(255 255 255 / 0.08) 78%,
+      rgb(255 255 255 / 0) 100%
+    );
+    animation: breathe 7s ease-in-out infinite alternate;
+  }
+
+  @keyframes breathe {
+    from {
+      scale: 0.94;
+    }
+    to {
+      scale: 1.06;
+    }
+  }
+
+  /* Their runner, as a black silhouette against the light, slightly soft: it stands inside the haze. */
+  .stage-figure {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    height: 104%;
+    aspect-ratio: 900 / 769;
+    transform: translateX(-50%);
+    background: var(--black);
+    -webkit-mask: url('/img/runner.png') center bottom / contain no-repeat;
+    mask: url('/img/runner.png') center bottom / contain no-repeat;
+    filter: blur(1.2px);
+  }
+
+  /* Fog in front of the figure; the canvas fades out at the top and the bottom, never a hard edge. */
+  .stage-fog {
+    position: absolute;
+    left: calc(var(--side) * -1);
+    top: -6%;
+    width: calc(100% + 2 * var(--side));
+    height: 120%;
+    mix-blend-mode: screen;
+    /* Gone by the bottom of the stage: the word below stays white on black. */
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 60%, transparent 88%);
+    mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 60%, transparent 88%);
+  }
+
+  /* The thin grid of their posters, only where the light is. */
+  .stage-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.13) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.13) 1px, transparent 1px);
+    background-size: 44px 44px;
+    background-position: center center;
+    -webkit-mask-image: radial-gradient(closest-side, #000, transparent);
+    mask-image: radial-gradient(closest-side, #000, transparent);
+  }
+
+  .stage-tag {
+    position: absolute;
+    top: 6%;
+    left: 0;
+    right: 0;
+  }
+
+  .stage-corner {
+    position: absolute;
+    top: 6%;
+    text-align: left;
+  }
+
+  .stage-corner.tl {
+    left: 0;
+  }
+
+  .stage-corner.tr {
+    right: 0;
+    text-align: right;
+  }
+
+  /* ---- The word ---- */
+
+  .mm {
+    position: relative;
+    justify-self: center;
+    width: max-content;
+    display: flex;
+    margin: -0.06em 0 3.2vh;
+    font-size: 15.5vw;
+    font-weight: 900;
+    line-height: 0.78;
+    white-space: nowrap;
+    user-select: none;
+    cursor: crosshair;
+  }
+
+  /* Tracking lives on each half, so it scales with the size the script gives that half. */
+  .half {
+    display: flex;
+    width: max-content;
+    letter-spacing: -0.015em;
+  }
+
+  .half span {
+    display: block;
+  }
+
+  /* Before the script fits it, the word waits thin and compressed: « mini ». */
+  :global(.js) .half span {
+    font-variation-settings:
+      'wdth' 62,
+      'wght' 100;
+  }
+
+  .hero-under {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding-bottom: 5vh;
+  }
+
+  .hero-text {
+    max-width: 52ch;
+  }
+
+  .hero-fine {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--white);
+  }
+
+  /* Everything but the word waits for the word. */
+  :global(.js) [data-hero-late] {
+    opacity: 0;
+    transition: opacity 420ms ease;
+  }
+
+  :global(.js) .is-in [data-hero-late] {
+    opacity: 1;
+  }
+
+  :global(.js) .is-in .hero-under {
+    transition-delay: 80ms;
+  }
+
+  :global(.js) .is-in .hero-fine {
+    transition-delay: 160ms;
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      grid-template-rows: auto minmax(30svh, 1fr) auto auto auto;
+    }
+
+    .mm {
+      flex-direction: column;
+      font-size: 24vw;
+      line-height: 0.8;
+      margin-top: 0.1em;
+    }
+
+    .hero-meta {
+      grid-template-columns: 1fr auto;
+    }
+
+    .hero-pictos {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .hero-meta-r {
+      grid-column: 1;
+      text-align: left;
+    }
+
+    .hero-meta :global(.hero-org) {
+      grid-column: 2;
+      grid-row: 2;
+      justify-self: end;
+    }
+
+    .stage-corner {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stage-light {
+      animation: none;
+    }
+  }
+</style>

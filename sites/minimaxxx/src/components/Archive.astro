@@ -1,0 +1,362 @@
+---
+// 0008—Youth archive. Their casting cards (Name, Age, Ig, Second-hand/100, filled in by hand),
+// turned into a card the visitor fills in and gets stamped. Mockup: nothing leaves the page.
+import Picto from './Picto.astro';
+
+// Ring of spiky crosses around the logo stamp, as on the deck's cards.
+const ring = Array.from({ length: 14 }, (_, i) => {
+  const a = (i / 14) * Math.PI * 2 - Math.PI / 2;
+  return { x: 100 + Math.cos(a) * 84, y: 50 + Math.sin(a) * 40, r: (a * 180) / Math.PI };
+});
+---
+
+<section id="archive" class="archive on-white framed">
+  <div class="archive-text">
+    <h2 class="head"><span class="n">0008</span>—Youth archive<span class="tag">[One rule: second-hand only®]</span></h2>
+    <p class="xl">Ta fiche pour l’archive.</p>
+    <blockquote class="archive-quote">
+      « Par ce projet nous voulons montrer la diversité infinie qu’offre la mode de seconde main, tout en valorisant le talent
+      individuel de nos modèles amateurs. »
+    </blockquote>
+    <p class="s archive-how">Remplis-la ici. Le portrait se fait sur place, au prochain événement.</p>
+  </div>
+
+  <div class="desk">
+    <div class="card card-under u1" aria-hidden="true"></div>
+    <div class="card card-under u2" aria-hidden="true"></div>
+
+    <form class="card" data-card>
+      <div class="photo">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <Picto name="person" class="photo-figure" />
+        <span class="fine photo-note">Portrait sur place</span>
+      </div>
+
+      <label class="field">
+        <span class="field-name">Name</span>
+        <input class="hand" name="name" maxlength="18" autocomplete="given-name" spellcheck="false" />
+      </label>
+      <label class="field">
+        <span class="field-name">Age</span>
+        <input class="hand" name="age" inputmode="numeric" maxlength="2" pattern="[0-9]*" />
+      </label>
+      <label class="field">
+        <span class="field-name">Ig</span>
+        <input class="hand" name="ig" maxlength="24" placeholder="@" autocomplete="off" spellcheck="false" />
+      </label>
+      <label class="field">
+        <span class="field-name">Second-hand/100</span>
+        <span class="score">
+          <input type="range" name="score" min="0" max="100" value="90" data-score />
+          <output class="hand" data-score-out>90/100</output>
+        </span>
+      </label>
+
+      <svg class="seal" viewBox="0 0 200 100" aria-hidden="true">
+        {
+          ring.map((s) => (
+            <path
+              transform={`translate(${s.x.toFixed(1)} ${s.y.toFixed(1)}) rotate(${s.r.toFixed(0)}) scale(0.11) translate(-50 -50)`}
+              d="M52 0 C53 31 61 43 100 47 C63 52 55 61 51 100 C46 66 39 56 0 51 C37 45 47 35 52 0 Z"
+            />
+          ))
+        }
+        <image href="/img/wordmark-black.png" x="44" y="43" width="112" height="14.3" />
+      </svg>
+
+      <div class="stamp" data-stamp aria-hidden="true">
+        <span>Archivé</span>
+        <span class="stamp-no" data-stamp-no>N° 0001</span>
+      </div>
+
+      <button class="btn btn-solid card-btn" type="submit" data-card-btn>Tamponner la fiche</button>
+      <p class="sr-only" aria-live="polite" data-card-status></p>
+    </form>
+  </div>
+</section>
+
+<script>
+  import { reduce } from '../scripts/scroll';
+
+  const card = document.querySelector<HTMLFormElement>('[data-card]');
+  if (card) {
+    const score = card.querySelector<HTMLInputElement>('[data-score]')!;
+    const out = card.querySelector<HTMLOutputElement>('[data-score-out]')!;
+    const btn = card.querySelector<HTMLButtonElement>('[data-card-btn]')!;
+    const no = card.querySelector<HTMLElement>('[data-stamp-no]')!;
+    const status = card.querySelector<HTMLElement>('[data-card-status]')!;
+    let count = 0;
+
+    score.addEventListener('input', () => (out.value = `${score.value}/100`));
+
+    card.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (card.classList.contains('is-stamped')) {
+        card.reset();
+        out.value = '90/100';
+        card.classList.remove('is-stamped');
+        btn.textContent = 'Tamponner la fiche';
+        status.textContent = 'Nouvelle fiche.';
+        card.querySelector<HTMLInputElement>('input')?.focus();
+        return;
+      }
+      count++;
+      no.textContent = `N° ${String(count).padStart(4, '0')}`;
+      card.classList.add('is-stamped');
+      btn.textContent = 'Nouvelle fiche';
+      status.textContent = `Fiche tamponnée, numéro ${count}.`;
+      // The rubber stamp hits the card: a short press, the paper gives a little.
+      if (!reduce.matches) {
+        card.animate([{ transform: 'scale(1)' }, { transform: 'scale(0.985)' }, { transform: 'scale(1)' }], {
+          duration: 240,
+          delay: 90,
+          easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+        });
+      }
+    });
+  }
+</script>
+
+<style>
+  .archive {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 48px var(--gutter);
+    align-items: center;
+    padding-block: 16vh;
+  }
+
+  .archive-text {
+    grid-column: 1 / span 6;
+    display: flex;
+    flex-direction: column;
+    gap: 5vh;
+  }
+
+  .archive-quote {
+    margin: 0;
+    max-width: 34ch;
+    font-size: var(--fs-m);
+  }
+
+  .archive-how {
+    font-weight: 500;
+  }
+
+  .desk {
+    grid-column: 8 / -1;
+    position: relative;
+    display: grid;
+    justify-items: center;
+    padding: 24px 0;
+  }
+
+  .card {
+    --paper: #fff;
+    position: relative;
+    grid-area: 1 / 1;
+    width: min(360px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 16px 18px;
+    background: var(--paper);
+    border: 1px solid var(--black);
+    text-transform: none;
+  }
+
+  .card-under {
+    height: 100%;
+  }
+
+  .u1 {
+    transform: rotate(-4deg) translate(-10px, 6px);
+  }
+
+  .u2 {
+    transform: rotate(3deg) translate(12px, -4px);
+  }
+
+  .photo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 4;
+    margin-bottom: 4px;
+    background: var(--black);
+    overflow: hidden;
+  }
+
+  /* A backlight behind the figure, as on their portraits. */
+  .photo::before {
+    content: '';
+    position: absolute;
+    inset: 10% 0 0;
+    background: radial-gradient(closest-side, rgb(255 255 255 / 0.5), rgb(255 255 255 / 0));
+  }
+
+  .photo :global(.photo-figure) {
+    position: relative;
+    height: 72%;
+    color: var(--black);
+  }
+
+  .photo-note {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  .corner {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 0 solid var(--white);
+  }
+
+  .tl {
+    top: 8px;
+    left: 8px;
+    border-width: 2px 0 0 2px;
+  }
+
+  .tr {
+    top: 8px;
+    right: 8px;
+    border-width: 2px 2px 0 0;
+  }
+
+  .bl {
+    bottom: 8px;
+    left: 8px;
+    border-width: 0 0 2px 2px;
+  }
+
+  .br {
+    bottom: 8px;
+    right: 8px;
+    border-width: 0 2px 2px 0;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .field-name {
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .field input:not([type='range']),
+  .field input:not([type='range']),
+  .score {
+    height: 38px;
+    border: 1px solid var(--black);
+  }
+
+  .field input:not([type='range']) {
+    width: 100%;
+    padding: 4px 10px 0;
+    background: none;
+    border-radius: 0;
+    font-size: 27px;
+    line-height: 1;
+    color: var(--black);
+  }
+
+  .field input:focus-visible {
+    outline: 2px solid var(--black);
+    outline-offset: -1px;
+  }
+
+  .score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+  }
+
+  .score input {
+    flex: 1;
+    min-width: 0;
+    accent-color: var(--black);
+  }
+
+  .score output {
+    min-width: 3.4em;
+    font-size: 27px;
+    line-height: 1;
+    text-align: right;
+  }
+
+  .seal {
+    width: 62%;
+    margin: 6px auto 2px;
+    fill: var(--black);
+  }
+
+  /* The rubber stamp. Ink is uneven: a grain mask eats into it. */
+  .stamp {
+    position: absolute;
+    top: 66%;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 18px 8px;
+    border: 4px double var(--black);
+    color: var(--black);
+    font-size: 44px;
+    font-weight: 900;
+    font-stretch: 70%;
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-16deg) scale(1.5);
+    transition:
+      opacity 120ms ease,
+      transform 180ms var(--ease-out);
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.6 2.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.6 2.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  .stamp-no {
+    margin-top: 6px;
+    font-size: 15px;
+    font-stretch: 100%;
+    letter-spacing: 0.04em;
+  }
+
+  .is-stamped .stamp {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) rotate(-9deg) scale(1);
+  }
+
+  .card-btn {
+    justify-content: center;
+    margin-top: 6px;
+    text-transform: uppercase;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stamp {
+      transform: translate(-50%, -50%) rotate(-9deg);
+      transition: opacity 160ms ease;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .archive-text,
+    .desk {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

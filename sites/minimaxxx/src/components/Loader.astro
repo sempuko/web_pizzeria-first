@@ -1,0 +1,140 @@
+---
+// Homage to their current site's loader: black screen, the runner, a 1px bar.
+// Shown once per visit; skipped under reduced motion and when JS is off.
+---
+
+<div class="loader" data-loader aria-hidden="true">
+  <span class="loader-runner"></span>
+  <span class="loader-bar"><span></span></span>
+  <span class="loader-count fine"><span data-loader-count>0</span> pièces</span>
+</div>
+
+<script is:inline>
+  (function () {
+    var seen = false;
+    try {
+      seen = sessionStorage.getItem('mmx-loader') === '1';
+      sessionStorage.setItem('mmx-loader', '1');
+    } catch (e) {}
+    if (!seen && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.documentElement.classList.add('is-loading');
+    }
+  })();
+</script>
+
+<script>
+  import { markReady } from '../scripts/scroll';
+
+  const loader = document.querySelector<HTMLElement>('[data-loader]');
+  const root = document.documentElement;
+
+  if (!loader || !root.classList.contains('is-loading')) {
+    loader?.remove();
+    markReady();
+  } else {
+    const count = loader.querySelector<HTMLElement>('[data-loader-count]')!;
+    const fmt = new Intl.NumberFormat('fr-FR');
+    const start = performance.now();
+    const duration = 1000;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      // ease-out-quart: the stock arrives fast, then settles on the real number
+      count.textContent = fmt.format(Math.round(10000 * (1 - (1 - t) ** 4)));
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+
+    const minTime = new Promise((resolve) => setTimeout(resolve, 1150));
+    // Never hold the page longer than 2.5 s, even if a font is slow.
+    const fonts = Promise.race([document.fonts.ready, new Promise((resolve) => setTimeout(resolve, 2500))]);
+
+    Promise.all([minTime, fonts]).then(() => {
+      loader.classList.add('is-out');
+      // The hero starts while the curtain lifts, so the two read as one move.
+      setTimeout(markReady, 180);
+      loader.addEventListener(
+        'transitionend',
+        () => {
+          root.classList.remove('is-loading');
+          loader.remove();
+        },
+        { once: true },
+      );
+    });
+  }
+</script>
+
+<style>
+  .loader {
+    display: none;
+  }
+
+  :global(.is-loading) .loader {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: var(--black);
+    color: var(--white);
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 560ms var(--ease-in-out);
+    /* Safety net: if the script never runs, the curtain still goes away. */
+    animation: give-up 0s 4s forwards;
+  }
+
+  @keyframes give-up {
+    to {
+      visibility: hidden;
+    }
+  }
+
+  :global(.is-loading) .loader.is-out {
+    clip-path: inset(0 0 100% 0);
+  }
+
+  .loader-runner {
+    --h: 120px;
+    --w: calc(var(--h) * 1.17);
+    width: var(--w);
+    height: var(--h);
+    background: url('/img/runner-sprite.png') 0 0 / calc(var(--w) * 8) var(--h) no-repeat;
+    animation: run 640ms steps(8) infinite;
+  }
+
+  @keyframes run {
+    to {
+      background-position-x: calc(var(--w) * -8);
+    }
+  }
+
+  /* Their loader: a 1px bar, white on 20% white. */
+  .loader-bar {
+    width: 100px;
+    height: 1px;
+    background: rgb(255 255 255 / 0.2);
+  }
+
+  .loader-bar span {
+    display: block;
+    height: 100%;
+    background: var(--white);
+    transform-origin: left;
+    animation: fill 1100ms var(--ease-out) forwards;
+  }
+
+  @keyframes fill {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  .loader-count {
+    font-variant-numeric: tabular-nums;
+    min-width: 12ch;
+    text-align: center;
+  }
+</style>

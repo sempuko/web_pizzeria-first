@@ -1,0 +1,864 @@
+---
+// 0000—Tour. A band tour T-shirt on the rail of a friperie, between empty hangers (their racks, k1000 style).
+// It hangs front out: a big print of the runner. As you scroll, the hanger turns and shows the back: every
+// city and date in condensed caps, crossed out once passed, the last line left for the next city.
+// Without JS, or with reduced motion, the back is simply shown.
+// Wind: the shirt hangs in perspective and the breeze turns and lifts it in uneven gusts, the sleeves flap at
+// the shoulder seams, a wave runs down the hinged hem, light slides over the fabric, and its shadow on the
+// wall moves on its own plane. All of it is CSS animation of transforms (compositor only, no JS per frame);
+// it pauses off screen and while you type in the vote, and is off under reduced motion.
+import Picto from './Picto.astro';
+import { tour } from '../content/site';
+---
+
+<section id="tour" class="tour on-white grain" data-tour>
+  <div class="tour-top framed">
+    <h2 class="head"><span class="n">0000</span>—Tour<span class="tag">[Worldwide//2026]</span></h2>
+    <p class="s tour-intro">Une ville différente chaque week-end. Un lieu différent. La même énergie partout.</p>
+  </div>
+
+  <div class="rail" aria-hidden="true">
+    {
+      [3, 10, 90, 97].map((x, i) => (
+        <svg class="hanger" data-hanger style={`left: ${x}%; --d: ${i}`} viewBox="0 0 100 70" aria-hidden="true">
+          <path d="M50 30 V20 Q50 14 56 11 Q62 8 60 3 Q57 -1 51 2" />
+          <path d="M50 30 L5 62 Q1 66 7 66 L93 66 Q99 66 95 62 Z" />
+        </svg>
+      ))
+    }
+  </div>
+
+  <div class="tee-wrap" data-tee>
+    <div class="tee-wind">
+    <span class="tee-shadow" aria-hidden="true"></span>
+    <div class="tee-3d" data-tee-3d>
+    <!-- Same scale as the shirt (1 unit = 1/1000 of its width): the stem runs down behind the collar -->
+    <svg class="hook" viewBox="0 0 100 240" aria-hidden="true">
+      <path d="M50 240 V74 Q50 44 68 32 Q88 18 76 6 Q64 -4 46 8" fill="none" stroke="currentColor" stroke-width="7" />
+    </svg>
+
+    <!-- Front: what you see on the rail -->
+    <div class="tee tee-front" aria-hidden="true">
+      <div class="shoulders">
+        <svg class="tee-top" viewBox="0 0 1000 320">
+          <path d="M330 18 Q500 200 670 18 L792 50 L820 244 L820 321 L180 321 L180 244 L208 50 Z" />
+          <path class="rib" d="M346 26 Q500 212 654 26" />
+        </svg>
+        <svg class="sleeve sleeve-l" viewBox="0 0 1000 320" aria-hidden="true"><path d="M222 44 L0 196 L66 302 L196 240 Z" /></svg>
+        <svg class="sleeve sleeve-r" viewBox="0 0 1000 320" aria-hidden="true"><path d="M778 44 L1000 196 L934 302 L804 240 Z" /></svg>
+      </div>
+      <div class="tee-body front-body">
+        <div class="print front-print">
+          <img class="print-logo" src="/img/wordmark-white.png" alt="" width="2400" height="306" loading="lazy" />
+          <span class="front-runner"></span>
+          <p class="front-line">Friperie + DJ-sets + designers</p>
+          <p class="front-small">Second-hand only® :: 1 €—10 € maxxx :: tour au dos</p>
+        </div>
+        <span class="sheen"><span></span></span>
+      </div>
+      <div class="hem">
+        <span class="hem-band" style="--k: 0"><span class="hem-band" style="--k: 1"><span class="hem-band" style="--k: 2"></span></span></span>
+      </div>
+    </div>
+
+    <!-- Back: the tour dates -->
+    <div class="tee tee-back">
+      <div class="shoulders">
+        <svg class="tee-top" viewBox="0 0 1000 320" aria-hidden="true">
+          <path d="M330 18 Q500 128 670 18 L792 50 L820 244 L820 321 L180 321 L180 244 L208 50 Z" />
+          <path class="rib" d="M346 26 Q500 138 654 26" />
+          <g class="label">
+            <rect x="462" y="86" width="76" height="40" />
+            <text x="500" y="100" text-anchor="middle">MINIMAXXX</text>
+            <text x="500" y="110" text-anchor="middle">XXL :: 100%</text>
+            <text x="500" y="120" text-anchor="middle">SECONDE MAIN</text>
+          </g>
+        </svg>
+        <svg class="sleeve sleeve-l" viewBox="0 0 1000 320" aria-hidden="true"><path d="M222 44 L0 196 L66 302 L196 240 Z" /></svg>
+        <svg class="sleeve sleeve-r" viewBox="0 0 1000 320" aria-hidden="true"><path d="M778 44 L1000 196 L934 302 L804 240 Z" /></svg>
+      </div>
+
+      <div class="tee-body">
+        <div class="print">
+          <img class="print-logo" src="/img/wordmark-white.png" alt="Minimaxxx" width="2400" height="306" loading="lazy" />
+          <p class="print-sub">Worldwide tour 2026</p>
+
+          <ol class="stops" data-stops>
+            {
+              tour.map((stop, i) => (
+                <li class="stop" data-end={stop.end} style={`--i: ${i}`}>
+                  <span class="d">{stop.dates}</span>
+                  <span class="c">{stop.city}</span>
+                  <span class="v">{stop.venue}</span>
+                </li>
+              ))
+            }
+            <li class="stop stop-next">
+              <span class="d">??.??</span>
+              <form class="vote" data-vote>
+                <label class="sr-only" for="vote-city">Dans quelle ville veux-tu Minimaxxx ?</label>
+                <input id="vote-city" name="city" placeholder="Ta ville ?" maxlength="24" autocomplete="address-level2" required />
+                <button type="submit">+1</button>
+              </form>
+            </li>
+          </ol>
+
+          <p class="print-foot" data-vote-msg>Bring Minimaxxx to your city®</p>
+          <p class="print-pictos" aria-hidden="true">
+            <Picto name="globe" />
+            <Picto name="recycle" />
+            <Picto name="ce" />
+          </p>
+        </div>
+        <span class="sheen" aria-hidden="true"><span></span></span>
+      </div>
+      <div class="hem" aria-hidden="true">
+        <span class="hem-band" style="--k: 0"><span class="hem-band" style="--k: 1"><span class="hem-band" style="--k: 2"></span></span></span>
+      </div>
+    </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { spring } from '../scripts/spring';
+  import { reduce, finePointer } from '../scripts/scroll';
+
+  const section = document.querySelector<HTMLElement>('[data-tour]');
+  const tee = section?.querySelector<HTMLElement>('[data-tee]');
+  const turn = section?.querySelector<HTMLElement>('[data-tee-3d]');
+  const list = section?.querySelector<HTMLElement>('[data-stops]');
+
+  if (section && tee && turn && list) {
+    // 1. Cross out the stops that are over, in Paris time. Done as the back comes round,
+    //    or, when the shirt does not turn, when the list comes into view.
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(new Date());
+    const past = [...list.querySelectorAll<HTMLElement>('[data-end]')].filter((li) => li.dataset.end! < today);
+    past.forEach((li) => li.classList.add('is-past'));
+    const strike = () => list.classList.add('is-struck');
+    // Set by the swing (part 3): the flip gives the hanging shirt a small push.
+    let onFlip = (_dir: number) => {};
+
+    if (reduce.matches) {
+      new IntersectionObserver(
+        ([entry], io) => {
+          if (!entry.isIntersecting) return;
+          io.disconnect();
+          strike();
+        },
+        { rootMargin: '0px 0px -25% 0px' },
+      ).observe(list);
+    } else {
+      // 2. The hanger turns by itself: front while the shirt comes up the screen, and as soon as its top
+      //    passes a third of the way up, a spring swings it round to the back (with a little overshoot,
+      //    like a real hanger), so the dates are there without a long scroll. Scrolling back up turns it
+      //    to the front again; the gap between the two thresholds stops it flapping at the edge.
+      //    A click gives it a spin.
+      section.classList.add('is-turning');
+      const TO_BACK = 0.34;
+      const TO_FRONT = 0.6;
+      let showBack = false;
+      const target = () => {
+        const top = tee.getBoundingClientRect().top / window.innerHeight;
+        if (!showBack && top < TO_BACK) {
+          showBack = true;
+          onFlip(1);
+        } else if (showBack && top > TO_FRONT) {
+          showBack = false;
+          onFlip(-1);
+        }
+        return showBack ? 180 : 0;
+      };
+      const spin = spring(
+        (deg) => {
+          turn.style.transform = `rotateY(${deg.toFixed(2)}deg)`;
+          // Which face is towards the viewer, so only that one takes clicks.
+          const back = Math.cos((deg * Math.PI) / 180) < 0;
+          turn.classList.toggle('is-back', back);
+          if (deg > 150) strike();
+        },
+        { stiffness: 70, damping: 10 },
+      );
+      spin.jump(target());
+      let queued = false;
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (queued) return;
+          queued = true;
+          requestAnimationFrame(() => {
+            queued = false;
+            spin.set(target());
+          });
+        },
+        { passive: true },
+      );
+      turn.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('form')) return;
+        spin.kick(720);
+      });
+    }
+
+    // 3. The shirt and the empty hangers swing a little when the page scrolls under them; the shirt also
+    //    when it flips round. The pointer no longer pushes the shirt: it made it jiggle all the time.
+    //    Swings are well damped (they settle in about a second) and soft-limited with tanh, so they
+    //    slow down near the end of their arc instead of hitting a hard stop.
+    if (!reduce.matches) {
+      const soft = (v: number, limit: number) => limit * Math.tanh(v / limit);
+
+      const hangers = [...section.querySelectorAll<SVGElement>('[data-hanger]')].map((el, i) => {
+        const s = spring((deg) => (el.style.rotate = `${soft(deg, 12).toFixed(2)}deg`), {
+          stiffness: 34 + i * 6,
+          damping: 3.2,
+        });
+        return { s, gain: [0.32, -0.24, 0.28, -0.36][i] ?? 0.3 };
+      });
+      section.querySelectorAll<SVGElement>('[data-hanger]').forEach((el, i) => {
+        el.addEventListener('pointerenter', (e) => {
+          if (finePointer.matches) hangers[i].s.kick(e.movementX >= 0 ? 45 : -45);
+        });
+      });
+
+      const swing = spring((deg) => (tee.style.transform = Math.abs(deg) < 0.005 ? '' : `rotate(${soft(deg, 1.1).toFixed(3)}deg)`), {
+        stiffness: 40,
+        damping: 7,
+      });
+      onFlip = (dir) => swing.kick(dir * 5);
+
+      let lastY = window.scrollY;
+      let visible = false;
+      new IntersectionObserver(([entry]) => (visible = entry.isIntersecting), { rootMargin: '100px' }).observe(section);
+      window.addEventListener(
+        'scroll',
+        () => {
+          const dy = window.scrollY - lastY;
+          lastY = window.scrollY;
+          if (!visible) return;
+          swing.kick(Math.max(-2.5, Math.min(2.5, dy * 0.05)));
+          for (const h of hangers) h.s.kick(Math.max(-25, Math.min(25, dy * h.gain)));
+        },
+        { passive: true },
+      );
+    }
+
+    // 4. The wind blows only while the shirt is on screen.
+    new IntersectionObserver(([entry]) => section.classList.toggle('is-windy', entry.isIntersecting), {
+      rootMargin: '120px',
+    }).observe(tee);
+
+    // 3. « Bring Minimaxxx to your city ». Mockup: the vote stays on this device (needs a backend to count).
+    const form = section.querySelector<HTMLFormElement>('[data-vote]')!;
+    const msg = section.querySelector<HTMLElement>('[data-vote-msg]')!;
+    const showVote = (city: string) => {
+      const row = form.closest('li')!;
+      row.classList.add('is-voted');
+      form.replaceWith(Object.assign(document.createElement('span'), { className: 'c', textContent: city }));
+      row.append(Object.assign(document.createElement('span'), { className: 'v', textContent: '+1' }));
+      msg.textContent = `C’est noté : ${city} est sur la liste.`;
+    };
+    let saved = '';
+    try {
+      saved = localStorage.getItem('mmx-vote') ?? '';
+    } catch {}
+    if (saved) showVote(saved);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const city = String(new FormData(form).get('city') ?? '').trim();
+      if (!city) return;
+      try {
+        localStorage.setItem('mmx-vote', city);
+      } catch {}
+      showVote(city);
+    });
+  }
+</script>
+
+<style>
+  /* A white showroom: overexposed light from above, the floor a little darker, like their gallery shots. */
+  .tour {
+    --grain: 0.3;
+    padding: 16vh 0 14vh;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 38%, #fff 40%, rgb(255 255 255 / 0) 100%),
+      linear-gradient(to bottom, #f4f4f4, #fff 40%, #ececec);
+  }
+
+  .tour-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .tour-top .head {
+    justify-content: center;
+  }
+
+  .tour-intro {
+    max-width: 34ch;
+  }
+
+  /* The friperie rail, full width. */
+  .rail {
+    height: 6px;
+    margin-top: 9vh;
+    background: var(--black);
+  }
+
+  /* Empty hangers hanging from the rail, pushed to the ends. */
+  .rail {
+    position: relative;
+  }
+
+  .hanger {
+    position: absolute;
+    top: -6px;
+    width: clamp(70px, 6.5vw, 110px);
+    translate: -50% 0;
+    transform-origin: 50% 0;
+    overflow: visible;
+    fill: none;
+    stroke: var(--black);
+    stroke-width: 3;
+    stroke-linejoin: round;
+    will-change: transform;
+  }
+
+  .tee-wrap {
+    --tee: min(980px, 68vw);
+    position: relative;
+    width: var(--tee);
+    margin: 0 auto;
+    transform-origin: 50% 0;
+    perspective: 2200px;
+    will-change: transform;
+  }
+
+  /* Gusts: the whole shirt turns and lifts from the hook, unevenly. */
+  .tee-wind {
+    position: relative;
+    transform-style: preserve-3d;
+    transform-origin: 50% 0;
+  }
+
+  /* Its shadow on the showroom wall, on a plane behind the shirt: it moves less, which reads as depth. */
+  .tee-shadow {
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    top: 26%;
+    bottom: 2%;
+    border-radius: 40% 40% 20% 20%;
+    background: radial-gradient(ellipse at 50% 35%, rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.08) 55%, rgb(0 0 0 / 0) 75%);
+    filter: blur(26px);
+    transform: translate3d(4%, 3%, -140px);
+    pointer-events: none;
+  }
+
+  /* The hanger turns: both faces live in one 3D space, each hides its back. */
+  .tee-3d {
+    position: relative;
+    padding-top: calc(var(--tee) * 0.061);
+    transform-style: preserve-3d;
+    transform: rotateY(180deg);
+  }
+
+  .is-turning .tee-3d {
+    cursor: pointer;
+  }
+
+  /* Faces stay flat planes: sleeves and hem move within them. Nesting 3D spaces in the faces broke hit-testing
+     in Chrome (clicks on the vote landed on the shirt container), so depth comes from the shirt as a whole. */
+  .tee-front,
+  .tee-back,
+  .tee-top,
+  .sleeve,
+  .tee-body,
+  .hem-band {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .shoulders {
+    position: relative;
+  }
+
+  /* Sleeves: drawn on the same 1000×320 grid as the torso, overlapping it a little at the seam, hinged there. */
+  .sleeve {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    overflow: visible;
+    fill: var(--black);
+  }
+
+  .sleeve-l {
+    transform-origin: 20.9% 44.4%;
+  }
+
+  .sleeve-r {
+    transform-origin: 79.1% 44.4%;
+  }
+
+  /* Hem: three bands hinged to each other; a wave runs down them. */
+  .hem {
+    width: 64%;
+    margin: -1px auto 0;
+  }
+
+  .hem-band {
+    position: relative;
+    display: block;
+    height: calc(var(--tee) * 0.028);
+    background: var(--black);
+    transform-origin: 50% 0;
+  }
+
+  /* A soft crease at each hinge: it catches the light as the wave goes through. */
+  .hem-band::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 55%;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0));
+    pointer-events: none;
+  }
+
+  .hem-band .hem-band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% - 1px);
+  }
+
+  /* Light sliding over the fabric: soft diagonal streaks drifting across the body. */
+  /* Fades in below the shoulder seam and out before the hem, so the light has no hard edge. */
+  .sheen {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+  }
+
+  .sheen span {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 300%;
+    /* One tile per body width; the streaks stay clear of the tile edges, so the tiles join invisibly
+       and moving by exactly two tiles loops without a jump. */
+    background: linear-gradient(
+        105deg,
+        rgb(255 255 255 / 0) 34%,
+        rgb(255 255 255 / 0.075) 42%,
+        rgb(255 255 255 / 0) 50%,
+        rgb(255 255 255 / 0) 54%,
+        rgb(255 255 255 / 0.04) 58%,
+        rgb(255 255 255 / 0) 64%
+      )
+      0 0 / 33.3333% 100% repeat-x;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .tee-wind {
+      animation: gust 11s ease-in-out infinite;
+    }
+
+    .sleeve-l {
+      animation: sleeve-l 2.3s ease-in-out infinite alternate;
+    }
+
+    .sleeve-r {
+      animation: sleeve-r 2.9s ease-in-out infinite alternate;
+    }
+
+    .hem-band {
+      animation: hem 1.9s ease-in-out infinite alternate;
+      animation-delay: calc(var(--k) * -0.45s);
+    }
+
+    .sheen span {
+      animation: sheen 7s linear infinite;
+    }
+  }
+
+  /* Paused until the shirt is on screen. After the @media block: its animation shorthand resets play-state. */
+
+  .tee-wind,
+  .sleeve-l,
+  .sleeve-r,
+  .hem-band,
+  .sheen span {
+    animation-play-state: paused;
+  }
+
+  .is-windy .tee-wind,
+  .is-windy .sleeve-l,
+  .is-windy .sleeve-r,
+  .is-windy .hem-band,
+  .is-windy .sheen span {
+    animation-play-state: running;
+  }
+
+  /* Typing a city: the wind drops, so the form holds still. */
+  .is-windy .tee-wrap:focus-within :is(.tee-wind, .sleeve-l, .sleeve-r, .hem-band, .sheen span) {
+    animation-play-state: paused;
+  }
+
+  /* Wind from the left: the hem swings right (negative rotateZ around the hook), the shirt turns and lifts. */
+  @keyframes gust {
+    0%,
+    100% {
+      transform: rotateY(2deg) rotateX(1deg) rotateZ(-0.3deg);
+    }
+    14% {
+      transform: rotateY(9deg) rotateX(4deg) rotateZ(-1.1deg);
+    }
+    24% {
+      transform: rotateY(4deg) rotateX(1.5deg) rotateZ(-0.4deg);
+    }
+    38% {
+      transform: rotateY(11deg) rotateX(5deg) rotateZ(-1.4deg);
+    }
+    52% {
+      transform: rotateY(1deg) rotateX(0deg) rotateZ(0deg);
+    }
+    66% {
+      transform: rotateY(-3deg) rotateX(-1deg) rotateZ(0.4deg);
+    }
+    80% {
+      transform: rotateY(6deg) rotateX(3deg) rotateZ(-0.8deg);
+    }
+  }
+
+  @keyframes sleeve-l {
+    from {
+      transform: rotateZ(-2deg) rotateY(0deg);
+    }
+    to {
+      transform: rotateZ(5deg) rotateY(24deg);
+    }
+  }
+
+  @keyframes sleeve-r {
+    from {
+      transform: rotateZ(1deg) rotateY(0deg);
+    }
+    to {
+      transform: rotateZ(-8deg) rotateY(-20deg);
+    }
+  }
+
+  @keyframes hem {
+    from {
+      transform: rotateX(-10deg);
+    }
+    to {
+      transform: rotateX(18deg);
+    }
+  }
+
+  @keyframes sheen {
+    from {
+      transform: translate3d(-66.6667%, 0, 0);
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .tee-back {
+    transform: rotateY(180deg);
+  }
+
+  /* The wrappers sit in the same plane as the faces, and with the gusts the 3D hit-test sometimes picked a
+     wrapper over the face (a click on the vote then did nothing). Wrappers never take clicks; faces do.
+     Clicks on a face still bubble up to .tee-3d for the spin. */
+  .tee-wind,
+  .tee-3d {
+    pointer-events: none;
+  }
+
+  .tee-front,
+  .tee-back {
+    pointer-events: auto;
+  }
+
+  /* A face turned away is hidden, but browsers can still hit-test it: only the visible face takes clicks. */
+  .is-turning .tee-3d:not(.is-back) .tee-back,
+  .is-turning .tee-3d.is-back .tee-front {
+    pointer-events: none;
+  }
+
+  /* Doubled class: wins over the plain .tee rule further down. */
+  .tee.tee-front {
+    position: absolute;
+    inset: calc(var(--tee) * 0.061) 0 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .front-body {
+    flex: 1;
+    display: flex;
+  }
+
+  .front-print {
+    flex: 1;
+    justify-content: flex-start;
+    gap: 2.4%;
+    padding-top: 4%;
+  }
+
+  .front-print .print-logo {
+    width: 74%;
+  }
+
+  /* The runner, printed big and white across the chest. */
+  .front-runner {
+    width: 96%;
+    aspect-ratio: 900 / 769;
+    background: var(--white);
+    -webkit-mask: url('/img/runner.png') center / contain no-repeat;
+    mask: url('/img/runner.png') center / contain no-repeat;
+  }
+
+  .front-line {
+    font-size: clamp(14px, 2.3vw, 32px);
+    font-weight: 900;
+    font-stretch: 70%;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+
+  .front-small {
+    font-size: clamp(9px, 0.85vw, 12px);
+    font-weight: 700;
+  }
+
+  .hook {
+    position: absolute;
+    top: calc(var(--tee) * -0.0146);
+    left: 45%;
+    width: 10%;
+    color: var(--black);
+  }
+
+  /* Positioned so the shirt covers the end of the hook. */
+  .tee {
+    position: relative;
+  }
+
+  .tee-top {
+    width: 100%;
+    margin-bottom: -1px;
+    overflow: visible;
+  }
+
+  .tee-top path:first-child {
+    fill: var(--black);
+  }
+
+  .rib {
+    fill: none;
+    stroke: var(--dark);
+    stroke-width: 12;
+  }
+
+  /* The care label inside the neck. */
+  .label rect {
+    fill: var(--white);
+  }
+
+  .label text {
+    font-family: var(--font);
+    font-size: 7.5px;
+    font-weight: 800;
+    fill: var(--black);
+  }
+
+  .tee-body {
+    position: relative;
+    width: 64%;
+    margin: 0 auto;
+    padding: 2% 4% 8%;
+    background: var(--black);
+    color: var(--white);
+  }
+
+  /* Screen print, a little worn: the ink is masked by grain. */
+  .print {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 2.15'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 2.15'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  .print-logo {
+    width: 86%;
+  }
+
+  .print-sub {
+    margin: 0.6em 0 1.6em;
+    font-size: clamp(14px, 2.2vw, 30px);
+    font-weight: 900;
+    font-stretch: 125%;
+    letter-spacing: -0.02em;
+  }
+
+  .stops {
+    width: 100%;
+    font-size: clamp(13px, 1.95vw, 25px);
+    font-weight: 800;
+    font-stretch: 68%;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .stop {
+    position: relative;
+    display: grid;
+    grid-template-columns: 0.8fr 1.1fr 1.5fr;
+    gap: 0.7em;
+    padding: 0.32em 0;
+    align-items: baseline;
+  }
+
+  .d {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stop :global(.c) {
+    text-align: center;
+  }
+
+  .stop :global(.v) {
+    text-align: left;
+    font-weight: 400;
+  }
+
+  /* Crossed out: a white line drawn across the stop once the list arrives on screen. */
+  .stop.is-past::after {
+    content: '';
+    position: absolute;
+    left: -2%;
+    right: -2%;
+    top: calc(0.32em + 0.44em);
+    height: 0.12em;
+    background: var(--white);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 520ms var(--ease-in-out);
+    transition-delay: calc(var(--i) * 70ms);
+  }
+
+  .is-struck .stop.is-past::after {
+    transform: none;
+  }
+
+  :global(html:not(.js)) .stop.is-past::after {
+    transform: none;
+  }
+
+  .stop-next {
+    margin-top: 0.4em;
+    padding-top: 0.7em;
+    border-top: 0.08em dashed var(--white);
+  }
+
+  .vote {
+    grid-column: 2 / span 2;
+    display: flex;
+    gap: 0.5em;
+    align-items: baseline;
+  }
+
+  .vote input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.15em 0;
+    background: none;
+    border: 0;
+    border-bottom: 0.08em solid var(--white);
+    border-radius: 0;
+    font-weight: 800;
+    font-stretch: 68%;
+    text-align: center;
+  }
+
+  .vote input::placeholder {
+    color: var(--white);
+    opacity: 0.55;
+  }
+
+  .vote input:focus-visible {
+    outline: 1px solid var(--white);
+    outline-offset: 2px;
+  }
+
+  .vote button {
+    min-width: 2.4em;
+    min-height: 1.8em;
+    border: 0.08em solid var(--white);
+    font-weight: 900;
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .vote button:active {
+    transform: scale(0.95);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .vote button:hover {
+      background: var(--white);
+      color: var(--black);
+    }
+  }
+
+  .is-voted :global(.v) {
+    color: var(--white);
+  }
+
+  .print-foot {
+    margin-top: 2em;
+    font-size: clamp(10px, 0.9vw, 12px);
+    font-weight: 800;
+  }
+
+  .print-pictos {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: clamp(14px, 1.6vw, 22px);
+  }
+
+  @media (max-width: 720px) {
+    /* On a phone the sleeves run off the screen; the back of the shirt is what matters. */
+    .tee-wrap {
+      --tee: 150vw;
+      margin-left: -25vw;
+    }
+
+    .hanger {
+      display: none;
+    }
+
+    .tee-body {
+      padding-inline: 4%;
+    }
+
+    .stop {
+      grid-template-columns: 0.85fr 1.15fr 1.1fr;
+      gap: 0.6em;
+    }
+  }
+</style>
