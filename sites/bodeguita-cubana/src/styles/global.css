@@ -29,6 +29,12 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+/* Paintings and snapshots wait slightly rotated or scaled until they are revealed; on a phone
+   that must never widen the page. `clip`, not `hidden`: it keeps the façade's sticky curtain working. */
+main {
+  overflow-x: clip;
+}
+
 body {
   background: var(--color-azulejo);
   color: var(--color-marino);
